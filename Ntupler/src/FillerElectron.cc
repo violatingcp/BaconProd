@@ -8,7 +8,7 @@
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
 #include "DataFormats/GsfTrackReco/interface/GsfTrack.h"
-#include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
+#include "EgammaAnalysis/ElectronTools/interface/SuperClusterHelper.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
@@ -20,6 +20,8 @@
 #include "TrackingTools/IPTools/interface/IPTools.h"
 #include "DataFormats/EgammaCandidates/interface/Conversion.h"
 #include "RecoEgamma/EgammaTools/interface/ConversionTools.h"
+#include "Geometry/CaloEventSetup/interface/CaloTopologyRecord.h"
+#include "Geometry/Records/interface/CaloGeometryRecord.h"
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
 #include <TMath.h>
@@ -31,7 +33,7 @@ using namespace baconhep;
 FillerElectron::FillerElectron(const edm::ParameterSet &iConfig):
   fMinPt       (iConfig.getUntrackedParameter<double>("minPt",7)),
   fEleName     (iConfig.getUntrackedParameter<std::string>("edmName","gsfElectrons")),
-  fPFCandName  (iConfig.getUntrackedParameter<std::string>("edmPFCandName","particleFlow")),
+  fPFCandName  (iConfig.getUntrackedParameter<edm::InputTag>("edmPFCandName")),
   fTrackName   (iConfig.getUntrackedParameter<std::string>("edmTrackName","generalTracks")),
   fConvName    (iConfig.getUntrackedParameter<std::string>("edmConversionName","allConversions")),
   fRhoName     (iConfig.getUntrackedParameter<std::string>("edmRhoForEnergyRegression","kt6PFJets")),
@@ -110,7 +112,7 @@ void FillerElectron::fill(TClonesArray *array,
 
   // event energy density
   edm::Handle<double> hRho;
-  edm::InputTag rhoTag(fRhoName,"rho","RECO");
+  edm::InputTag rhoTag(fRhoName,"","RECO");
   iEvent.getByLabel(rhoTag,hRho);
   
   // Get SuperCluster collections
@@ -123,8 +125,32 @@ void FillerElectron::fill(TClonesArray *array,
   iEvent.getByLabel(fEESCName,hEESCProduct);
   assert(hEESCProduct.isValid());
   const reco::SuperClusterCollection *eeSCCol = hEESCProduct.product();
-  
+
+  //Load the Geometry ( for the Super Cluster local Info)
+  /*
+  if(fGeomInitialized) { 
+    edm::ESHandle<CaloTopology> hCaloTopology;
+    iSetup.get<CaloTopologyRecord>().get(hCaloTopology);
+    fEcalTopo = &(*hCaloTopology);
+
+    edm::ESHandle<CaloGeometry> hCaloGeometry;
+    iSetup.get<CaloGeometryRecord>().get(hCaloGeometry);
+    fCaloGeom = &(*hCaloGeometry);
     
+    fGeomInitialized = true;
+  }
+  */  
+  //Get the Rec Hit Collections
+  //edm::Handle<EcalRecHitCollection> hEBRecHits;
+  //iEvent.getByLabel(fEBRecHitName,hEBRecHits);
+  //assert(hEBRecHits.isValid());
+  //const EcalRecHitCollection *ebRecHits  = hEBRecHits.product();
+
+  //edm::Handle<EcalRecHitCollection> hEERecHits;
+  //iEvent.getByLabel(fEERecHitName,hEERecHits);
+  //assert(hEERecHits.isValid());
+  //const EcalRecHitCollection *eeRecHits  = hEERecHits.product();
+ 
   const double ELE_MASS = 0.000511;
 
   
@@ -132,22 +158,21 @@ void FillerElectron::fill(TClonesArray *array,
   iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder",hTransientTrackBuilder);
   const TransientTrackBuilder *transientTrackBuilder = hTransientTrackBuilder.product();
   
-  edm::InputTag ebRecHitTag(fEBRecHitName);
-  edm::InputTag eeRecHitTag(fEERecHitName);
-  EcalClusterLazyTools lazyTools(iEvent, iSetup, ebRecHitTag, eeRecHitTag);
-  
   for(reco::GsfElectronCollection::const_iterator itEle = eleCol->begin(); itEle!=eleCol->end(); ++itEle) {
     
     const reco::GsfTrackRef gsfTrack = itEle->gsfTrack();
     const reco::SuperClusterRef sc   = itEle->superCluster();
+    //const EcalRecHitCollection *recHits = 0; 
+    //itEle->isEB() ? recHits = ebRecHits : eeRecHits;
+    //SuperClusterHelper scHelper(&(*itEle),recHits,fEcalTopo,fCaloGeom); 
     
     // electron pT cut
-    std::pair<double,double> result = fDoEleCorr ? fEleCorr.evaluate(&(*itEle), *hRho, nvtx, iEvent.id().run(), iSetup, lazyTools, false)
-                                                 : std::pair<double,double>(itEle->p(), 0);
+    //std::pair<double,double> result = fDoEleCorr ? fEleCorr.evaluate(&(*itEle), *hRho, nvtx, iEvent.id().run(), iSetup, scHelper, false)
+    //                                           : std::pair<double,double>(itEle->p(), 0);
     TLorentzVector elevec;
     elevec.SetPtEtaPhiM(itEle->pt(), itEle->eta(), itEle->phi(), ELE_MASS);
-    double ptCorr = result.first*TMath::Sin(elevec.Theta());
-    if(itEle->pt() < fMinPt && ptCorr < fMinPt) continue;
+    //double ptCorr = result.first*TMath::Sin(elevec.Theta());
+    if(itEle->pt() < fMinPt) continue;// && ptCorr < fMinPt) continue;
     
     // construct object and place in array    
     TClonesArray &rElectronArr = *array;
@@ -162,15 +187,15 @@ void FillerElectron::fill(TClonesArray *array,
     pElectron->pt         = itEle->pt();
     pElectron->eta        = itEle->eta();
     pElectron->phi        = itEle->phi();
-    pElectron->ptHZZ4l    = ptCorr;
-    pElectron->ptErrHZZ4l = result.second*TMath::Sin(elevec.Theta());;
+    //pElectron->ptHZZ4l    = ptCorr;
+    //pElectron->ptErrHZZ4l = result.second*TMath::Sin(elevec.Theta());;
     pElectron->q          = itEle->charge();
     pElectron->ecalEnergy = itEle->correctedEcalEnergy();
     pElectron->scEt       = (sc->energy())*(sc->position().Rho())/(sc->position().R());
     pElectron->scEta      = sc->eta();
     pElectron->scPhi      = sc->phi();
-    pElectron->scEtHZZ4l  = (sc->energy())*(sc->position().Rho())/(sc->position().R())*(pElectron->ptHZZ4l)/(pElectron->pt);
-    pElectron->r9         = lazyTools.e3x3(*(sc->seed())) / sc->rawEnergy();
+    // pElectron->scEtHZZ4l  = (sc->energy())*(sc->position().Rho())/(sc->position().R())*(pElectron->ptHZZ4l)/(pElectron->pt);
+    pElectron->r9         = itEle->r9();
     
     pElectron->pfPt  = 0;
     pElectron->pfEta = 0;
@@ -223,7 +248,7 @@ void FillerElectron::fill(TClonesArray *array,
     pElectron->dEtaIn = itEle->deltaEtaSuperClusterTrackAtVtx();
     pElectron->dPhiIn = itEle->deltaPhiSuperClusterTrackAtVtx();
     
-    pElectron->mva = evalEleIDMVA(*itEle, lazyTools);
+    //pElectron->mva = evalEleIDMVA(*itEle, scHelpber);
     
     pElectron->classification = itEle->classification();
     
@@ -319,13 +344,12 @@ void FillerElectron::computeIso(const reco::GsfElectron &ele, const double extRa
 }
 
 //--------------------------------------------------------------------------------------------------
-double FillerElectron::evalEleIDMVA(const reco::GsfElectron &ele, EcalClusterLazyTools& lazyTools)
+double FillerElectron::evalEleIDMVA(const reco::GsfElectron &ele, SuperClusterHelper& scHelper)
 {
   assert(fEleIDMVA.isInitialized());
   
   const reco::TrackRef kfTrackRef   = ele.closestCtfTrackRef();
   const reco::SuperClusterRef scRef = ele.superCluster();
-  std::vector<float> vCov = lazyTools.localCovariances(*(scRef->seed()));
   
   double _fbrem          = (ele.fbrem() < -1.) ? -1. : ele.fbrem();
   double _kftrk_chisq    = kfTrackRef.isNonnull() ? TMath::Min(kfTrackRef->normalizedChi2(),10.) : 0;
@@ -336,11 +360,11 @@ double FillerElectron::evalEleIDMVA(const reco::GsfElectron &ele, EcalClusterLaz
   double _dphi           = TMath::Min(fabs(ele.deltaPhiSuperClusterTrackAtVtx()),0.6);
   double _detacalo       = TMath::Min(fabs(ele.deltaEtaSeedClusterTrackAtCalo()),0.2);
   double _sigieie        = ele.sigmaIetaIeta();
-  double _sigiphiiphi    = isnan(vCov[2]) ? 0 : sqrt(vCov[2]);
+  double _sigiphiiphi    = ele.sigmaIphiIphi();//scHelper.spp();
   double _etawidth       = scRef->etaWidth(); 
   double _phiwidth       = scRef->phiWidth();
   double _e1x5e5x5       = (ele.e5x5() != 0) ? 1 - ele.e1x5()/ele.e5x5() : -1;
-  double _r9             = TMath::Min(lazyTools.e3x3(*(scRef->seed()))/scRef->rawEnergy(), 5.);
+  double _r9             = TMath::Min(double(ele.r9()), 5.);
   double _h_o_e          = ele.hcalOverEcal();
   double _e_o_p          = (ele.eSuperClusterOverP()  > 20.) ? 20. : ele.eSuperClusterOverP();
   double _eeleclu_o_pout = (ele.eEleClusterOverPout() > 20.) ? 20. : ele.eEleClusterOverPout();

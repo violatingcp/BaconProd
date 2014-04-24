@@ -45,7 +45,7 @@ namespace baconhep {
 	const int                nvertices,                         // number of primary vertices
 	const unsigned int       runNum,                            // run number
 	const edm::EventSetup   &iSetup,                            // event setup handle
-	EcalClusterLazyTools    &lazyTools,                         // class to compute ECAL cluster quantities
+	SuperClusterHelper      &scHelper,                          // class to compute ECAL cluster quantities
 	const bool               printDebug=false);
           
     protected:

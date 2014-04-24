@@ -1,3 +1,4 @@
+#include "FWCore/Utilities/interface/InputTag.h"
 #include "FWCore/Framework/interface/MakerMacros.h"      // definitions for declaring plug-in modules
 #include "FWCore/Framework/interface/Frameworkfwd.h"     // declaration of EDM types
 #include "FWCore/Framework/interface/EDAnalyzer.h"       // EDAnalyzer class
@@ -75,7 +76,7 @@ class NtuplerMod : public edm::EDAnalyzer {
     
     // AOD collection names
     std::string fPVName;
-    std::string fPFCandName;
+    edm::InputTag fPFCandName;
 
     std::vector<double> fConeSizes;
     bool fComputeFullJetInfo;

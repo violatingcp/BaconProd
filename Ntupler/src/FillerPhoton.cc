@@ -9,7 +9,7 @@
 #include "DataFormats/EgammaCandidates/interface/Photon.h"
 #include "DataFormats/EgammaReco/interface/SuperCluster.h"
 #include "DataFormats/EgammaReco/interface/SuperClusterFwd.h"
-#include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
+#include "EgammaAnalysis/ElectronTools/interface/SuperClusterHelper.h"
 #include "DataFormats/HLTReco/interface/TriggerEvent.h"
 #include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/EgammaCandidates/interface/Conversion.h"
@@ -24,7 +24,7 @@ using namespace baconhep;
 FillerPhoton::FillerPhoton(const edm::ParameterSet &iConfig):
   fMinPt       (iConfig.getUntrackedParameter<double>("minPt",10)),
   fPhotonName  (iConfig.getUntrackedParameter<std::string>("edmName","photons")),
-  fPFCandName  (iConfig.getUntrackedParameter<std::string>("edmPFCandName","particleFlow")),
+  fPFCandName  (iConfig.getUntrackedParameter<edm::InputTag>("edmPFCandName")),
   fEleName     (iConfig.getUntrackedParameter<std::string>("edmElectronName","gsfElectrons")),
   fConvName    (iConfig.getUntrackedParameter<std::string>("edmConversionName","allConversions")),
   fEBSCName    (iConfig.getUntrackedParameter<std::string>("edmEBSuperClusterName","correctedHybridSuperClusters")),
@@ -80,11 +80,18 @@ void FillerPhoton::fill(TClonesArray *array,
   assert(hEESCProduct.isValid());
   const reco::SuperClusterCollection *eeSCCol = hEESCProduct.product();
 
-    
-  edm::InputTag ebRecHitTag(fEBRecHitName);
-  edm::InputTag eeRecHitTag(fEERecHitName);
-  EcalClusterLazyTools lazyTools(iEvent, iSetup, ebRecHitTag, eeRecHitTag);
-  
+    //Get the Rec Hit Collections
+  /*
+  edm::Handle<EcalRecHitCollection> hEBRecHits;
+  iEvent.getByLabel(fEBRecHitName,hEBRecHits);
+  assert(hEBRecHits.isValid());
+  const EcalRecHitCollection *ebRecHits  = hEBRecHits.product();
+
+  edm::Handle<EcalRecHitCollection> hEERecHits;
+  iEvent.getByLabel(fEERecHitName,hEERecHits);
+  assert(hEERecHits.isValid());
+  const EcalRecHitCollection *eeRecHits  = hEERecHits.product();
+  */
   std::vector<const reco::PFCandidate*> usedPFPhotons;  // keep track of PF photons that are also counted as standard photons
   
   // PF photon cuts for HZZ4l FSR recovery
@@ -95,6 +102,9 @@ void FillerPhoton::fill(TClonesArray *array,
     
     // Photon cuts
     if(itPho->pt() < fMinPt) continue;
+
+    //const EcalRecHitCollection *recHits = 0; 
+    //itPho->isEB() ? recHits = ebRecHits : eeRecHits;
     
     // construct object and place in array
     TClonesArray &rPhotonArr = *array;
@@ -104,8 +114,6 @@ void FillerPhoton::fill(TClonesArray *array,
     baconhep::TPhoton *pPhoton = (baconhep::TPhoton*)rPhotonArr[index];
 
     const reco::SuperClusterRef sc = itPho->superCluster();
-    std::vector<float> vCov = lazyTools.localCovariances(*(sc->seed()));
-    
     //
     // Kinematics
     //==============================
@@ -116,7 +124,7 @@ void FillerPhoton::fill(TClonesArray *array,
     pPhoton->scEt  = (sc->energy())*(sc->position().Rho())/(sc->position().R());
     pPhoton->scEta = sc->eta();
     pPhoton->scPhi = sc->phi();
-    pPhoton->r9    = lazyTools.e3x3(*(sc->seed())) / (sc->rawEnergy());
+    pPhoton->r9    = itPho->r9();
 
     // consider standard photon also to be a PF photon if they share supercluster
     pPhoton->pfPt  = 0;
@@ -165,7 +173,7 @@ void FillerPhoton::fill(TClonesArray *array,
     //==============================    
     pPhoton->hovere = itPho->hadronicOverEm();
     pPhoton->sieie  = itPho->sigmaIetaIeta();
-    pPhoton->sipip  = isnan(vCov[2]) ? 0 : sqrt(vCov[2]);
+    pPhoton->sipip  = 0;//isnan(vCov[2]) ? 0 : sqrt(vCov[2]);
     
     pPhoton->fiducialBits=0;
     if(itPho->isEB())        pPhoton->fiducialBits |= kIsEB;
@@ -239,9 +247,11 @@ void FillerPhoton::fill(TClonesArray *array,
 
     const reco::PhotonRef       pho = itPF->photonRef();
     const reco::SuperClusterRef sc  = itPF->superClusterRef();
-    std::vector<float> vCov;
-    if(sc.isNonnull()) vCov = lazyTools.localCovariances(*(sc->seed()));
     
+    //const EcalRecHitCollection *recHits = 0; 
+    //pho->isEB() ? recHits = ebRecHits : eeRecHits;
+    //std::vector<float> vCov =  EcalClusterTools::localCovariances( *(sc->seed()), recHits, fEcalTopo );    
+    //const float e3x3 = EcalClusterTools::e3x3( *(sc->seed()),recHits,fEcalTopo );
     //
     // Kinematics
     //==============================
@@ -257,7 +267,7 @@ void FillerPhoton::fill(TClonesArray *array,
       pPhoton->scEt  = (sc->energy())*(sc->position().Rho())/(sc->position().R());
       pPhoton->scEta = sc->eta();
       pPhoton->scPhi = sc->phi();
-      pPhoton->r9    = lazyTools.e3x3(*(sc->seed())) / (sc->rawEnergy());
+      pPhoton->r9    = 0;
     }
     
     // consider standard photon also to be a PF photon if they share supercluster
@@ -291,7 +301,7 @@ void FillerPhoton::fill(TClonesArray *array,
     //==============================
     if(pho.isNonnull()) pPhoton->hovere = pho->hadronicOverEm();
     if(pho.isNonnull()) pPhoton->sieie  = pho->sigmaIetaIeta();
-    if(sc.isNonnull())  pPhoton->sipip  = isnan(vCov[2]) ? 0 : sqrt(vCov[2]);
+    if(sc.isNonnull())  pPhoton->sipip  = 0;
     
     pPhoton->fiducialBits=0;
     if(pho.isNonnull()) {

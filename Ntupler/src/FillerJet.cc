@@ -212,7 +212,7 @@ void FillerJet::fill(TClonesArray *array, TClonesArray *iExtraArray,
 
   // Get event energy density for jet correction
   edm::Handle<double> hRho;
-  edm::InputTag rhoTag(fRhoName,"rho","RECO");
+  edm::InputTag rhoTag(fRhoName,"","RECO");
   iEvent.getByLabel(rhoTag,hRho);
   assert(hRho.isValid()); 
  

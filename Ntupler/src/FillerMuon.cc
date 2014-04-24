@@ -25,7 +25,7 @@ using namespace baconhep;
 FillerMuon::FillerMuon(const edm::ParameterSet &iConfig):
   fMinPt     (iConfig.getUntrackedParameter<double>("minPt",0)),
   fMuonName  (iConfig.getUntrackedParameter<std::string>("edmName","muons")),
-  fPFCandName(iConfig.getUntrackedParameter<std::string>("edmPFCandName","particleFlow")),
+  fPFCandName(iConfig.getUntrackedParameter<edm::InputTag>("edmPFCandName")),
   fTrackName (iConfig.getUntrackedParameter<std::string>("edmTrackName","generalTracks")),
   fDoMuCorr  (iConfig.getUntrackedParameter<bool>("doHZZ4lCorr",true)),
   fSaveTracks(iConfig.getUntrackedParameter<bool>("doSaveTracks",false)),

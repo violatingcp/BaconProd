@@ -4,6 +4,7 @@
 #include <string>
 
 // forward class declarations
+#include "FWCore/Utilities/interface/InputTag.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
@@ -33,7 +34,7 @@ namespace baconhep
       float time (const reco::PFCandidate *iPF);
       
       // EDM object collection names
-      std::string fPFName;
+      edm::InputTag fPFName;
       std::string fPVName;
       bool        fAddDepthTime;
   };

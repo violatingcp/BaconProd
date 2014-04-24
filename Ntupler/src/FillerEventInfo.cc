@@ -16,7 +16,7 @@ using namespace baconhep;
 
 //--------------------------------------------------------------------------------------------------
 FillerEventInfo::FillerEventInfo(const edm::ParameterSet &iConfig):
-  fPFCandName (iConfig.getUntrackedParameter<std::string>("edmPFCandName","particleFlow")),
+  fPFCandName (iConfig.getUntrackedParameter<edm::InputTag>("edmPFCandName")),
   fPUInfoName (iConfig.getUntrackedParameter<std::string>("edmPileupInfoName","addPileupInfo")),
   fBSName     (iConfig.getUntrackedParameter<std::string>("edmBeamspotName","offlineBeamSpot")),
   fPFMETName  (iConfig.getUntrackedParameter<std::string>("edmPFMETName","pfMet")),
@@ -249,14 +249,14 @@ void FillerEventInfo::fill(TEventInfo *evtInfo,
   
   // Rho for isolation correction
   edm::Handle<double> hRhoIso;
-  edm::InputTag rhoIsoTag(fRhoIsoName,"rho","RECO");
+  edm::InputTag rhoIsoTag(fRhoIsoName,"","RECO");
   iEvent.getByLabel(rhoIsoTag,hRhoIso);
   assert(hRhoIso.isValid());
   evtInfo->rhoIso = *hRhoIso;
   
   // Rho for jet energy correction
   edm::Handle<double> hRhoJet;
-  edm::InputTag rhoJetTag(fRhoJetName,"rho","RECO");
+  edm::InputTag rhoJetTag(fRhoJetName,"","RECO");
   iEvent.getByLabel(rhoJetTag,hRhoJet);
   assert(hRhoJet.isValid());
   evtInfo->rhoJet = *hRhoJet;

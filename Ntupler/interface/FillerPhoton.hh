@@ -6,6 +6,7 @@
 #include <string>
 
 // forward class declarations
+#include "FWCore/Utilities/interface/InputTag.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidateFwd.h"
@@ -48,7 +49,7 @@ namespace baconhep
       
       // EDM object collection names
       std::string fPhotonName;
-      std::string fPFCandName;
+      edm::InputTag fPFCandName;
       std::string fEleName;
       std::string fConvName;
       std::string fEBSCName;

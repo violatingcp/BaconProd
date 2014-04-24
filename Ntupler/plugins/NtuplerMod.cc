@@ -55,7 +55,7 @@ NtuplerMod::NtuplerMod(const edm::ParameterSet &iConfig):
   fHLTObjTag         ("hltTriggerSummaryAOD","","HLT"),
   fHLTFile           (iConfig.getUntrackedParameter<std::string>("TriggerFile","HLT")),
   fPVName            (iConfig.getUntrackedParameter<std::string>("edmPVName","offlinePrimaryVertices")),
-  fPFCandName        (iConfig.getUntrackedParameter<std::string>("edmPFCandName","particleFlow")),
+  fPFCandName        (iConfig.getUntrackedParameter<edm::InputTag>("edmPFCandName")),
   fComputeFullJetInfo(false),
   fFillerEvtInfo     (0),
   fFillerGenInfo     (0),

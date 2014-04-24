@@ -8,13 +8,14 @@
 #include <string>
 
 // forward class declarations
+#include "FWCore/Utilities/interface/InputTag.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidateFwd.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectronFwd.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 class TClonesArray;
-class EcalClusterLazyTools;
+class SuperClusterHelper;
 namespace trigger {
   class TriggerEvent;
 }
@@ -42,7 +43,7 @@ namespace baconhep
                       const std::vector<const reco::PFCandidate*> &pfNoPU,
                       float &out_chHadIso, float &out_gammaIso, float &out_neuHadIso) const;
       
-      double evalEleIDMVA(const reco::GsfElectron &ele, EcalClusterLazyTools &lazyTools);
+      double evalEleIDMVA(const reco::GsfElectron &ele, SuperClusterHelper& scHelper);
       
       
       // Electron cuts
@@ -50,7 +51,7 @@ namespace baconhep
       
       // EDM object collection names
       std::string fEleName;
-      std::string fPFCandName;
+      edm::InputTag fPFCandName;
       std::string fTrackName;
       std::string fConvName;
       std::string fRhoName;

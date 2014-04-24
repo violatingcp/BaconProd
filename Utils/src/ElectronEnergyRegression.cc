@@ -4,7 +4,7 @@
 #include "DataFormats/EgammaReco/interface/SuperCluster.h"
 #include "DataFormats/GsfTrackReco/interface/GsfTrack.h"
 #include "FWCore/Framework/interface/EventSetup.h"
-#include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
+#include "EgammaAnalysis/ElectronTools/interface/SuperClusterHelper.h"
 #include "RecoEgamma/EgammaTools/interface/EcalClusterLocal.h"
 #include "Cintex/Cintex.h"
 #include <TFile.h>
@@ -52,7 +52,7 @@ void ElectronEnergyRegression::initialize(const char *regressionFilename, Regres
 
 //--------------------------------------------------------------------------------------------------
 std::pair<double,double> ElectronEnergyRegression::evaluate(const reco::GsfElectron *ele, double rho, int nvertices, 
-                                                            const edm::EventSetup &iSetup, EcalClusterLazyTools &lazyTools,
+                                                            const edm::EventSetup &iSetup, SuperClusterHelper &scHelper,
 							    bool printDebug)
 {  
   assert(ele);
@@ -60,57 +60,41 @@ std::pair<double,double> ElectronEnergyRegression::evaluate(const reco::GsfElect
   // Checking if instance has been initialized
   assert(fIsInitialized);
   
-  const reco::SuperClusterRef sc   = ele->superCluster();
-  const reco::CaloClusterPtr& seed = sc->seed();  
-  
-  // compute shower shape variables for the supercluster seed
-  std::vector<float> vCov = lazyTools.localCovariances(*seed);
-  
-  // compute ECAL local quantites for the supercluster seed
-  float etacry, phicry, thetatilt, phitilt;
-  int ieta, iphi;
-  EcalClusterLocal local;
-  if(seed->hitsAndFractions().at(0).first.subdetId()==EcalBarrel) {
-    local.localCoordsEB(*seed,iSetup,etacry,phicry,ieta,iphi,thetatilt,phitilt); 
-  } else {
-    local.localCoordsEE(*seed,iSetup,etacry,phicry,ieta,iphi,thetatilt,phitilt);
-  }
-  
   //
   // Base variables
   //
-  double SCRawEnergy      = sc->rawEnergy();                        // SuperCluster raw energy
-  double scEta            = sc->eta();                              // SuperCluster eta
-  double scPhi            = sc->phi();                              // SuperCluster phi
-  double R9               = lazyTools.e3x3(*seed)/sc->rawEnergy();  // SuperCluster R9
-  double etawidth         = sc->etaWidth();                         // SuperCluster width in eta
-  double phiwidth         = sc->phiWidth();                         // SuperCluster width in phi
-  double NClusters        = sc->clustersSize();                     // number of basic clusters in the SuperCluster
-  double HoE              = ele->hcalOverEcal();                    // electron H/E
-  double EtaSeed          = seed->eta();                            // seed cluster eta
-  double PhiSeed          = seed->phi();                            // seed cluster phi
-  double ESeed            = seed->energy();                         // seed cluster energy
-  double E3x3Seed         = lazyTools.e3x3(*seed);                  // seed cluster E3x3
-  double E5x5Seed         = lazyTools.e5x5(*seed);                  // seed cluster E5x5
-  double see              = isnan(vCov[0]) ? 0 : sqrt(vCov[0]);     // SuperCluster sigma_ieta_ieta
-  double spp              = isnan(vCov[2]) ? 0 : sqrt(vCov[2]);     // SuperCluster sigma_iphi_iphi
-  double sep              = isnan(vCov[1]) ? 0 : vCov[1]/see/spp;   // SuperCluster cov(ieta,iphi)/(sigma_ieta_ieta * sigma_iphi_iphi)
-  double EMaxSeed         = lazyTools.eMax(*seed);                  // seed cluster EMax
-  double E2ndSeed         = lazyTools.e2nd(*seed);                  // seed cluster E2nd
-  double ETopSeed         = lazyTools.eTop(*seed);                  // seed cluster ETop
-  double EBottomSeed      = lazyTools.eBottom(*seed);               // seed cluster EBottom
-  double ELeftSeed        = lazyTools.eLeft(*seed);                 // seed cluster ELeft
-  double ERightSeed       = lazyTools.eRight(*seed);                // seed cluster ERight
-  double E2x5MaxSeed      = lazyTools.e2x5Max(*seed);               // seed cluster E2x5Max
-  double E2x5TopSeed      = lazyTools.e2x5Top(*seed);               // seed cluster E2x5Top
-  double E2x5BottomSeed   = lazyTools.e2x5Bottom(*seed);            // seed cluster E2x5Bottom
-  double E2x5LeftSeed     = lazyTools.e2x5Left(*seed);              // seed cluster E2x5Left
-  double E2x5RightSeed    = lazyTools.e2x5Right(*seed);             // seed cluster E2x5Right
-  double IEtaSeed         = ieta;                                   // seed cluster IEta
-  double IPhiSeed         = iphi;                                   // seed cluster IPhi
-  double EtaCrySeed       = etacry;                                 // eta of highest energy crystal in seed cluster
-  double PhiCrySeed       = phicry;                                 // phi of highest energy crystal in seed cluster
-  double PreShowerOverRaw = sc->preshowerEnergy()/sc->rawEnergy();  // (SuperCluster PreShower energy) / (SuperCluster raw energy)  
+  double SCRawEnergy      = scHelper.rawEnergy();                   // SuperCluster raw energy
+  double scEta            = scHelper.eta();                         // SuperCluster eta
+  double scPhi            = scHelper.phi();                         // SuperCluster phi
+  double R9               = scHelper.r9();                          // SuperCluster R9
+  double etawidth         = scHelper.etaWidth();                    // SuperCluster width in eta
+  double phiwidth         = scHelper.phiWidth();                    // SuperCluster width in phi
+  double NClusters        = scHelper.clustersSize();                // number of basic clusters in the SuperCluster
+  double HoE              = scHelper.hadronicOverEm();              // electron H/E
+  double EtaSeed          = scHelper.seedEta();                     // seed cluster eta
+  double PhiSeed          = scHelper.seedPhi();                     // seed cluster phi
+  double ESeed            = scHelper.seedEnergy();                  // seed cluster energy
+  double E3x3Seed         = scHelper.e3x3();                        // seed cluster E3x3
+  double E5x5Seed         = scHelper.e5x5();                        // seed cluster E5x5
+  double see              = scHelper.sigmaIetaIeta();               // SuperCluster sigma_ieta_ieta
+  double spp              = scHelper.spp();                         // SuperCluster sigma_iphi_iphi
+  double sep              = scHelper.sep();                         // SuperCluster cov(iphi)/(s      igma_ieta_ieta * sigma_iphi_iphi)
+  double EMaxSeed         = scHelper.eMax();                        // seed cluster EMax
+  double E2ndSeed         = scHelper.e2nd();                        // seed cluster E2nd
+  double ETopSeed         = scHelper.eTop();                        // seed cluster ETop
+  double EBottomSeed      = scHelper.eBottom();                     // seed cluster EBottom
+  double ELeftSeed        = scHelper.eLeft();                       // seed cluster ELeft
+  double ERightSeed       = scHelper.eRight();                      // seed cluster ERight
+  double E2x5MaxSeed      = scHelper.e2x5Max();                     // seed cluster E2x5Max
+  double E2x5TopSeed      = scHelper.e2x5Top();                     // seed cluster E2x5Top
+  double E2x5BottomSeed   = scHelper.e2x5Bottom();                  // seed cluster E2x5Bottom
+  double E2x5LeftSeed     = scHelper.e2x5Left();                    // seed cluster E2x5Left
+  double E2x5RightSeed    = scHelper.e2x5Right();                   // seed cluster E2x5Right
+  double IEtaSeed         = scHelper.ietaSeed();                    // seed cluster IEta
+  double IPhiSeed         = scHelper.iphiSeed();                    // seed cluster IPhi
+  double EtaCrySeed       = scHelper.etaCrySeed();                  // eta of highest energy crystal in seed cluster
+  double PhiCrySeed       = scHelper.phiCrySeed();                  // phi of highest energy crystal in seed cluster
+  double PreShowerOverRaw = scHelper.preshowerEnergyOverRaw();      // (SuperCluster PreShower energy) / (SuperCluster raw energy)  
   int	 IsEcalDriven     = ele->ecalDrivenSeed();                  // IsEcalDriven electron?
   
   //
@@ -135,79 +119,36 @@ std::pair<double,double> ElectronEnergyRegression::evaluate(const reco::GsfElect
   const reco::TrackRef kfTrackRef = ele->closestCtfTrackRef();
   double KFTrackNLayers = kfTrackRef.isNonnull() ? kfTrackRef->hitPattern().trackerLayersWithMeasurement() : -1;
     
-  //
-  // Sub-cluster variables
-  //
-  double ESubs=0;  // Energy sum of all basic clusters except seed
-  const reco::CaloCluster *sub1=0, *sub2=0, *sub3=0;
-  for(reco::CaloCluster_iterator itClus = sc->clustersBegin(); itClus!=sc->clustersEnd(); ++itClus) {
-    const reco::CaloCluster *clus = (*itClus).get();
-    if(clus == seed.get()) continue;
-    ESubs+=clus->energy();
-    if(!sub1 || clus->energy() > sub1->energy()) {
-      sub3 = sub2;
-      sub2 = sub1;
-      sub1 = clus;
-      
-    } else if(!sub2 || clus->energy() > sub2->energy()) {
-      sub3 = sub2;
-      sub2 = clus;
-    
-    } else if(!sub3 || clus->energy() > sub3->energy()) {
-      sub3 = clus;
-    }
-  }
-
-  // preshower clusters
-  unsigned int nPsClus=0;
-  double EPshwSubs=0;
-  const reco::CaloCluster *pshwsub1=0, *pshwsub2=0, *pshwsub3=0;
-  for(reco::CaloCluster_iterator itPsClus = sc->preshowerClustersBegin(); itPsClus!=sc->preshowerClustersEnd(); ++itPsClus) {
-    const reco::CaloCluster* psclus = (*itPsClus).get();
-    nPsClus++;
-    EPshwSubs+=psclus->energy();
-    if(!pshwsub1 || psclus->energy() > pshwsub1->energy()) {
-      pshwsub3 = pshwsub2;
-      pshwsub2 = pshwsub1;
-      pshwsub1 = psclus;
-      
-    } else if(!pshwsub2 || psclus->energy() > pshwsub2->energy()) {
-      pshwsub3 = pshwsub2;
-      pshwsub2 = psclus;
-    
-    } else if(!pshwsub3 || psclus->energy() > pshwsub3->energy()) {
-      pshwsub3 = psclus;
-    }
-  }
-  
-  double isEtaGap      = ele->isEBEtaGap();                     // is in EB eta module gap
-  double isPhiGap      = ele->isEBPhiGap();                     // is in EB phi module gap
-  double isDeeGap      = ele->isEEDeeGap();                     // is in EE Dee gap
-  double ESub1         = sub1 ? sub1->energy()        : 0.;     // 1st sub-cluster energy
-  double EtaSub1       = sub1 ? sub1->eta()           : 999.;   // 1st sub-cluster eta
-  double PhiSub1       = sub1 ? sub1->phi()           : 999.;   // 1st sub-cluster phi
-  double EMaxSub1      = sub1 ? lazyTools.eMax(*sub1) : 0.;     // 1st sub-cluster EMax
-  double E3x3Sub1      = sub1 ? lazyTools.e3x3(*sub1) : 0.;     // 1st sub-cluster E3x3
-  double ESub2         = sub2 ? sub2->energy()        : 0.;     // 2nd sub-cluster energy
-  double EtaSub2       = sub2 ? sub2->eta()           : 999.;   // 2nd sub-cluster eta
-  double PhiSub2       = sub2 ? sub2->phi()           : 999.;   // 2nd sub-cluster phi
-  double EMaxSub2      = sub2 ? lazyTools.eMax(*sub2) : 0.;     // 2nd sub-cluster EMax
-  double E3x3Sub2      = sub2 ? lazyTools.e3x3(*sub2) : 0.;     // 2nd sub-cluster E3x3
-  double ESub3         = sub3 ? sub3->energy()        : 0.;     // 3rd sub-cluster energy
-  double EtaSub3       = sub3 ? sub3->eta()           : 999.;   // 3rd sub-cluster eta
-  double PhiSub3       = sub3 ? sub3->phi()           : 999.;   // 3rd sub-cluster phi
-  double EMaxSub3      = sub3 ? lazyTools.eMax(*sub3) : 0.;     // 3rd sub-cluster EMax
-  double E3x3Sub3      = sub3 ? lazyTools.e3x3(*sub3) : 0.;     // 3rd sub-cluster E3x3
-  double NPshwClusters = nPsClus;                               // number of preshower clusters
-  double EPshwSub1     = pshwsub1 ? pshwsub1->energy() : 0.;    // 1st preshower cluster energy
-  double EtaPshwSub1   = pshwsub1 ? pshwsub1->eta()    : 999.;  // 1st preshower cluster eta
-  double PhiPshwSub1   = pshwsub1 ? pshwsub1->phi()    : 999.;  // 1st preshower cluster phi
-  double EPshwSub2     = pshwsub2 ? pshwsub2->energy() : 0.;    // 2nd preshower cluster energy
-  double EtaPshwSub2   = pshwsub2 ? pshwsub2->eta()    : 999.;  // 2nd preshower cluster eta
-  double PhiPshwSub2   = pshwsub2 ? pshwsub2->phi()    : 999.;  // 2nd preshower cluster phi
-  double EPshwSub3     = pshwsub3 ? pshwsub3->energy() : 0.;    // 3rd preshower cluster energy
-  double EtaPshwSub3   = pshwsub3 ? pshwsub3->eta()    : 999.;  // 3rd preshower cluster eta
-  double PhiPshwSub3   = pshwsub3 ? pshwsub3->phi()    : 999.;  // 3rd preshower cluster phi
+  double isEtaGap      = ele->isEBEtaGap();                    // is in EB eta module gap
+  double isPhiGap      = ele->isEBPhiGap();                    // is in EB phi module gap
+  double isDeeGap      = ele->isEEDeeGap();                    // is in EE Dee gap
+  double ESubs         = scHelper.eSubClusters();              // Sum energy of all the Sub Clusters
+  double ESub1         = scHelper.subClusterEnergy(1);         // 1st sub-cluster energy
+  double EtaSub1       = scHelper.subClusterEta(1);            // 1st sub-cluster eta
+  double PhiSub1       = scHelper.subClusterPhi(1) ;           // 1st sub-cluster phi
+  double EMaxSub1      = scHelper.subClusterEmax(1);           // 1st sub-cluster EMax
+  double E3x3Sub1      = scHelper.subClusterE3x3(1);           // 1st sub-cluster E3x3
+  double ESub2         = scHelper.subClusterEnergy(2);         // 2nd sub-cluster energy
+  double EtaSub2       = scHelper.subClusterEta(2);            // 2nd sub-cluster eta
+  double PhiSub2       = scHelper.subClusterPhi(2) ;           // 2nd sub-cluster phi
+  double EMaxSub2      = scHelper.subClusterEmax(2);           // 2nd sub-cluster EMax
+  double E3x3Sub2      = scHelper.subClusterE3x3(2);           // 2nd sub-cluster E3x3
+  double ESub3         = scHelper.subClusterEnergy(3);         // 3rd sub-cluster energy
+  double EtaSub3       = scHelper.subClusterEta(3);            // 3rd sub-cluster eta
+  double PhiSub3       = scHelper.subClusterPhi(3) ;           // 3rd sub-cluster phi
+  double EMaxSub3      = scHelper.subClusterEmax(3);           // 3rd sub-cluster EMax
+  double E3x3Sub3      = scHelper.subClusterE3x3(3);           // 3rd sub-cluster E3x3
+  double NPshwClusters = scHelper.nPreshowerClusters();        // number of preshower clusters
+  double EPshwSubs     = scHelper.eESClusters();               // Sum of all the Preshow clusters
+  double EPshwSub1     = scHelper.esClusterEnergy(0);          // 1st preshower cluster energy
+  double EtaPshwSub1   = scHelper.esClusterEta(0);             // 1st preshower cluster eta
+  double PhiPshwSub1   = scHelper.esClusterPhi(0);             // 1st preshower cluster phi
+  double EPshwSub2     = scHelper.esClusterEnergy(1);          // 2nd preshower cluster energy
+  double EtaPshwSub2   = scHelper.esClusterEta(1);             // 2nd preshower cluster eta
+  double PhiPshwSub2   = scHelper.esClusterPhi(1);             // 2nd preshower cluster phi
+  double EPshwSub3     = scHelper.esClusterEnergy(2);          // 3rd preshower cluster energy
+  double EtaPshwSub3   = scHelper.esClusterEta(2);             // 3rd preshower cluster eta
+  double PhiPshwSub3   = scHelper.esClusterPhi(2);             // 3rd preshower cluster phi
   
     
   bool isBarrel = false;

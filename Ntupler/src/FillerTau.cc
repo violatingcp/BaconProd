@@ -10,7 +10,7 @@ using namespace baconhep;
 
 //--------------------------------------------------------------------------------------------------
 FillerTau::FillerTau(const edm::ParameterSet &iConfig):
-  fMinPt  (iConfig.getUntrackedParameter<double>("minPt",20)),
+  fMinPt  (iConfig.getUntrackedParameter<double>("minPt",15)),
   fTauName(iConfig.getUntrackedParameter<std::string>("edmName","hpsPFTauProducer")),
   fRhoName(iConfig.getUntrackedParameter<std::string>("edmRhoForRingIso","kt6PFJets"))
 {
@@ -55,8 +55,8 @@ FillerTau::FillerTau(const edm::ParameterSet &iConfig):
   std::string cmssw_base_src = getenv("CMSSW_BASE");
   cmssw_base_src += "/src/";
   
-  fRingIso.initialize (cmssw_base_src + iConfig.getUntrackedParameter<std::string>("ringIsoFile", ""),true);
-  fRingIso2.initialize(cmssw_base_src + iConfig.getUntrackedParameter<std::string>("ringIso2File",""),true);
+  //fRingIso.initialize (cmssw_base_src + iConfig.getUntrackedParameter<std::string>("ringIsoFile", ""),true);
+  //fRingIso2.initialize(cmssw_base_src + iConfig.getUntrackedParameter<std::string>("ringIso2File",""),true);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -95,7 +95,7 @@ void FillerTau::fill(TClonesArray *array,
   
   // event energy density for ring isolation
   edm::Handle<double> hRho;
-  edm::InputTag rhoTag(fRhoName,"rho","RECO");
+  edm::InputTag rhoTag(fRhoName,"","RECO");
   iEvent.getByLabel(rhoTag,hRho);
 
 
@@ -126,14 +126,14 @@ void FillerTau::fill(TClonesArray *array,
     //
     // Impact Parameter
     //==============================
-    const reco::PFCandidateRef& leadChHad = itTau->leadPFChargedHadrCand();
+    const reco::PFCandidatePtr& leadChHad = itTau->leadPFChargedHadrCand();
     pTau->dzLeadChHad = (leadChHad.isNonnull() && leadChHad->trackRef().isNonnull()) ? leadChHad->trackRef()->dz(pv.position()) : -999.;    
    
     //
     // Isolation
     //==============================
-    pTau->ringIso     = fRingIso.isInitialized()  ? fRingIso.mvaValue (*itTau, *hRho) : -1;
-    pTau->ringIso2    = fRingIso2.isInitialized() ? fRingIso2.mvaValue(*itTau, *hRho) : -1;
+    //pTau->ringIso     = fRingIso.isInitialized()  ? fRingIso.mvaValue (*itTau, *hRho) : -1;
+    //pTau->ringIso2    = fRingIso2.isInitialized() ? fRingIso2.mvaValue(*itTau, *hRho) : -1;
     pTau->rawIso3Hits = hCombIsoDBSumPtCorr3HitsRaw.isValid() ? (*hCombIsoDBSumPtCorr3HitsRaw)[tauRef] : 0;
     pTau->rawIsoMVA3  = hIsoMVA3Raw.isValid() ? (*hIsoMVA3Raw)[tauRef] : 0;
 

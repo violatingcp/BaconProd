@@ -112,9 +112,9 @@ smearedCorrJets.src = 'smearedJets'
 
 pfMEtMVANoSmear = pfMEtMVA.clone()
 
-pfMEtMVA.srcCorrJets     = 'smearedCorrJets'
-pfMEtMVA.srcUncorrJets   = 'smearedJets'
-pfMEtMVA.srcPFCandidates = 'pfCandidatesSmeared'
+#pfMEtMVA.srcCorrJets     = 'smearedCorrJets'
+#pfMEtMVA.srcUncorrJets   = 'smearedJets'
+#pfMEtMVA.srcPFCandidates = 'pfCandidatesSmeared'
 
 pfMEtMVAUnity = pfMEtMVA.clone()
 pfMEtMVAUnity.inputFileNames = cms.PSet(
@@ -125,12 +125,12 @@ pfMEtMVAUnity.inputFileNames = cms.PSet(
 )
 
      
-MVAMetSeq = cms.Sequence(pfCandsNotInJet*
-                         smearedJets*
-			 smearedCorrJetsInput*
-			 smearedCorrJets*
-			 pfCandidatesSmeared* 
-                         PFTau*
+MVAMetSeq = cms.Sequence(#pfCandsNotInJet*
+                         #smearedJets*
+			 #smearedCorrJetsInput*
+			 #smearedCorrJets*
+			 #pfCandidatesSmeared* 
+                         #PFTau*
 			 pfMEtMVAsequence*
 			 pfMEtMVANoSmear*
 			 pfMEtMVAUnity)

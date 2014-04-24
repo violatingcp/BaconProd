@@ -1,6 +1,6 @@
 #include "BaconProd/Utils/interface/ElectronEnergySmearingScaling.hh"
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
-#include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
+#include "EgammaAnalysis/ElectronTools/interface/SuperClusterHelper.h"
 #include <TRandom3.h>
 #include <fstream>
 #include <string>
@@ -54,11 +54,11 @@ std::pair<double,double> ElectronEnergySmearingScaling::evaluate(
   const double             energy,	// electron energy
   const double             error,	// eletron energy uncertainty
   const unsigned int       runNum,	// run number
-  EcalClusterLazyTools    &lazyTools,   // class to compute ECAL cluster quantities
+  SuperClusterHelper     &scHelper,     // class to compute ECAL cluster quantities
   const bool               printDebug)  
 {
   double scEta = ele->superCluster()->eta();
-  double r9    = lazyTools.e3x3(*(ele->superCluster()->seed())) / ele->superCluster()->rawEnergy();
+  double r9    = scHelper.r9();
   bool   isEB  = ele->isEB();
   bool   isMC  = (fDatasetType==kSummer11) ||
                  (fDatasetType==kFall11) ||
@@ -84,18 +84,8 @@ std::pair<double,double> ElectronEnergySmearingScaling::evaluate(
     if(fScalesRecords[irec].runNumMin <= runNum && runNum <= fScalesRecords[irec].runNumMax)
       irun = irec;
   }
-  if(!isMC && irun<0) { // if data event is a run with unspecified corrections, return without corrections
-    if(printDebug) {
-      std::cout << "[ElectronEnergySmearingScaling]" << std::endl;
-      std::cout << " * category = " << icat << std::endl;
-      std::cout << " *   scale = 1" << std::endl;
-      std::cout << "old energy = " << energy << " +/- " << error << std::endl;
-      std::cout << "new energy = " << energy << " +/- " << error << std::endl;
-    }
-
-    return std::pair<double,double>(energy, error);
-  }
-
+  if(!isMC) assert(irun>-1);
+  
   //
   // resolution correction
   //

@@ -7,6 +7,7 @@
 #include <string>
 
 // forward class declarations
+#include "FWCore/Utilities/interface/InputTag.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidateFwd.h"
@@ -45,9 +46,9 @@ namespace baconhep
       double fMinPt;
       
       // EDM object collection names
-      std::string fMuonName;
-      std::string fPFCandName;
-      std::string fTrackName;
+      std::string   fMuonName;
+      edm::InputTag fPFCandName;
+      std::string   fTrackName;
 
       // Muon momentum corrector
       bool fDoMuCorr;

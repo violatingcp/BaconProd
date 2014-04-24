@@ -57,7 +57,7 @@ AK4PFJets = ak5PFJets.clone(
     rParam = cms.double(0.4),
     jetPtMin = cms.double(20)
     )
-
+#
 AK4caPFJetsPruned = ak5PFJetsPruned.clone(
     jetAlgorithm = cms.string("CambridgeAachen"),
     rParam = cms.double(0.4),
@@ -66,11 +66,11 @@ AK4caPFJetsPruned = ak5PFJetsPruned.clone(
     jetCollInstanceName=cms.string("SubJets"),
     jetPtMin = cms.double(20)
     )
-
+#
 from RecoJets.JetAssociationProducers.ic5JetTracksAssociatorAtVertex_cfi import ic5JetTracksAssociatorAtVertex
 AK4jetTracksAssociatorAtVertex          = ic5JetTracksAssociatorAtVertex.clone()
-AK4jetTracksAssociatorAtVertex  .jets   = cms.InputTag('AK4PFJets')
-AK4jetTracksAssociatorAtVertex  .tracks = "generalTracks"
+AK4jetTracksAssociatorAtVertex.jets     = cms.InputTag('AK4PFJets')
+AK4jetTracksAssociatorAtVertex.tracks   = "generalTracks"
 
 AK4jetTracksAssociatorAtVertexSJ        = ic5JetTracksAssociatorAtVertex.clone()
 AK4jetTracksAssociatorAtVertexSJ.jets   = cms.InputTag('AK4caPFJetsPruned','SubJets')
@@ -94,6 +94,8 @@ AK4jetCombinedSecondaryVertexMVABJetTagsSJ.tagInfos = cms.VInputTag( cms.InputTa
 from JetTools.AnalyzerToolbox.QGTagger_RecoJets_cff import *
 AK4QGTagger                                       = QGTagger.clone()
 AK4QGTagger.srcJets                               = cms.InputTag('AK4PFJets')
+#AK4QGTagger.srcRho                                = cms.InputTag('AK5PFJets','rho')
+#AK4QGTagger.srcRhoIso                             = cms.InputTag('AK5PFJets','rho')
 AK4QGTaggerSubJets                                = AK4QGTagger.clone()
 AK4QGTaggerSubJets.srcJets                        = cms.InputTag('AK4caPFJetsPruned','SubJets')
 
