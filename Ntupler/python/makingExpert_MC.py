@@ -15,7 +15,7 @@ process.load('RecoLocalCalo/EcalRecAlgos/EcalSeverityLevelESProducer_cfi')
 process.load('RecoLocalCalo/HcalRecAlgos/hcalRecAlgoESProd_cfi')
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
-process.GlobalTag.globaltag = 'START53_V7G::All'
+process.GlobalTag.globaltag = 'POSTLS162_V2::All'
 
 
 process.load("RecoTauTag/Configuration/RecoPFTauTag_cff")

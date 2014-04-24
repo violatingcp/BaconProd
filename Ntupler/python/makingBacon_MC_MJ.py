@@ -12,7 +12,7 @@ process.load('Configuration/EventContent/EventContent_cff')
 process.load('TrackingTools/TransientTrack/TransientTrackBuilder_cfi')
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
-process.GlobalTag.globaltag = 'START53_V7G::All'
+process.GlobalTag.globaltag = 'POSTLS162_V2::All'
 
 process.load("RecoTauTag/Configuration/RecoPFTauTag_cff")
 

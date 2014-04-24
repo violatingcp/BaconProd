@@ -4,30 +4,6 @@ from RecoJets.Configuration.RecoGenJets_cff     import ak5GenJets
 from RecoJets.JetProducers.ak5PFJets_cfi        import ak5PFJets
 from RecoJets.JetProducers.ak5PFJetsPruned_cfi  import ak5PFJetsPruned
 
-genParticlesForJets = cms.EDProducer("InputGenJetsParticleSelector",
-    src = cms.InputTag("genParticles"),
-    ignoreParticleIDs = cms.vuint32(
-         1000022,
-         1000012, 1000014, 1000016,
-         2000012, 2000014, 2000016,
-         1000039, 5100039,
-         4000012, 4000014, 4000016,
-         9900012, 9900014, 9900016,
-         39),
-    partonicFinalState = cms.bool(False),
-    excludeResonances = cms.bool(True),
-    excludeFromResonancePids = cms.vuint32(12, 13, 14, 16),
-    tausAsJets = cms.bool(False)
-)
-genParticlesForJetsNoNu = genParticlesForJets.clone()
-genParticlesForJetsNoNu.ignoreParticleIDs += cms.vuint32( 12,14,16)
-
-# Flavour byReference
-partons  = cms.EDProducer("PartonSelector",
-                          withLeptons = cms.bool(False),
-                          src = cms.InputTag("genParticles")
-                          )
-
 AK8GenJets = ak5GenJets.clone(
     rParam = cms.double(0.8)
     )
@@ -100,13 +76,6 @@ AK8QGTaggerSubJets.srcJets                        = cms.InputTag('AK8caPFJetsPru
 from JetTools.AnalyzerToolbox.njettinessadder_cfi import *
 AK8Njettiness                                     = Njettiness.clone()       
 AK8Njettiness.src                                 =  cms.InputTag('AK8PFJets')
-
-
-genjetsequence = cms.Sequence(
-    genParticlesForJets            *
-    genParticlesForJetsNoNu        *
-    partons *
-    ak5GenJets)
 
 recojetsequence = cms.Sequence( 
     goodOfflinePrimaryVerticesQG   *

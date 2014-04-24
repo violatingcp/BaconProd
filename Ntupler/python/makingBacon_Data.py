@@ -12,7 +12,7 @@ process.load('Configuration/EventContent/EventContent_cff')
 process.load('TrackingTools/TransientTrack/TransientTrackBuilder_cfi')
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
-process.GlobalTag.globaltag = 'FT_53_V21_AN3::All'
+process.GlobalTag.globaltag = 'POSTLS162_V2::All'
 
 process.load("RecoTauTag/Configuration/RecoPFTauTag_cff")
 
@@ -46,7 +46,7 @@ for line in hlt_file.readlines():
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.source = cms.Source("PoolSource",
-  fileNames  = cms.untracked.vstring('/store/data/Run2012D/MET/AOD/PromptReco-v1/000/203/994/163AA34A-570E-E211-ABD5-001D09F242EF.root')
+  fileNames  = cms.untracked.vstring('/store/relval/CMSSW_6_2_1/ZeroBias/RECO/GR_R_62_V1_dvmc_RelVal_zb2012Cdvmc-v2/00000/F4D369D4-933A-E311-A338-0025905938A4.root')
 )
 process.source.inputCommands = cms.untracked.vstring("keep *",
                                                      "drop *_MEtoEDMConverter_*_*")

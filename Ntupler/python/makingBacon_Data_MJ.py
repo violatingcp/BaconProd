@@ -12,7 +12,7 @@ process.load('Configuration/EventContent/EventContent_cff')
 process.load('TrackingTools/TransientTrack/TransientTrackBuilder_cfi')
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
-process.GlobalTag.globaltag = 'FT_53_V21_AN3::All'
+process.GlobalTag.globaltag = 'POSTLS162_V2::All'
 
 process.load("RecoTauTag/Configuration/RecoPFTauTag_cff")
 
@@ -232,7 +232,7 @@ process.ntupler = cms.EDAnalyzer('NtuplerMod',
   )
 )
 
-process.baconSequence = cms.Sequence(process.metFilters*
+process.baconSequence = cms.Sequence(#process.metFilters*
                                      process.producePFMETCorrections*
                                      process.recojetsequence*
 				     process.AK4jetsequence*
