@@ -10,23 +10,27 @@ CURRDIR=$PWD
 PATCHDIR=$CMSSW_BASE/src/BaconProd/patch
 cd $CMSSW_BASE/src
 
+### IF at LXPLUS
+#PREFIX=/afs
+### IF at CMSLPC
+PREFIX=/uscms_data/d2/ntran/physics/PhilPub/afs
 
 ### MuScleFit corrections for muons
 echo
 echo "[BaconProd] Checking out MuScleFit package..."
-cp -r /afs/cern.ch/user/p/pharris/pharris/public/bacon/prod/CMSSW_5_3_13/src/MuScleFit $CMSSW_BASE/src/
+cp -r $PREFIX/cern.ch/user/p/pharris/pharris/public/bacon/prod/CMSSW_5_3_13/src/MuScleFit $CMSSW_BASE/src/
 
 ### Electron MVA ID
 echo
 echo "[BaconProd] Checking out Electron MVA ID package..."
-cp -r /afs/cern.ch/user/p/pharris/pharris/public/bacon/prod/CMSSW_5_3_13/src/EGamma $CMSSW_BASE/src/
+cp -r $PREFIX/cern.ch/user/p/pharris/pharris/public/bacon/prod/CMSSW_5_3_13/src/EGamma $CMSSW_BASE/src/
 
 ### MET filters
 echo
 echo "[BaconProd] Checking out packages for MET filters..."
 #cvs co -r V00-00-13-01 RecoMET/METFilters
 #cvs co -r V00-00-08    RecoMET/METAnalyzers
-cp -r /afs/cern.ch/work/p/pharris/pharris/public/bacon/prod/CMSSW_6_2_7_patch2/src/RecoMET/            $CMSSW_BASE/src/
+cp -r $PREFIX/cern.ch/user/p/pharris/pharris/public/bacon/prod/CMSSW_6_2_7_patch2/src/RecoMET/            $CMSSW_BASE/src/
 
 ### Jet/MET packages
 echo
@@ -34,10 +38,10 @@ echo "[BaconProd] Checking out jet/MET packages..."
 git clone https://github.com/nhanvtran/JetTools.git
 cp $PATCHDIR/JetTools/AnalyzerToolbox/python/njettinessadder_cfi.py JetTools/AnalyzerToolbox/python/
 
-cp -r /afs/cern.ch/work/p/pharris/public/tmp/CMSSW_5_3_13/src/DataFormats 
-cp -r /afs/cern.ch/work/p/pharris/pharris/public/bacon/prod/CMSSW_6_2_7_patch2/src/DataFormats $CMSSW_BASE/src
-cp -r /afs/cern.ch/work/p/pharris/public/tmp/CMSSW_5_3_13/src/RecoJets                         $CMSSW_BASE/src
-cp -r /afs/cern.ch/work/p/pharris/public/tmp/CMSSW_5_3_13/src/CondFormats                      $CMSSW_BASE/src
+#cp -r /afs/cern.ch/work/p/pharris/public/tmp/CMSSW_5_3_13/src/DataFormats 
+#cp -r /afs/cern.ch/work/p/pharris/pharris/public/bacon/prod/CMSSW_6_2_7_patch2/src/DataFormats $CMSSW_BASE/src
+cp -r $PREFIX/cern.ch/work/p/pharris/public/tmp/CMSSW_5_3_13/src/RecoJets                         $CMSSW_BASE/src
+cp -r $PREFIX/cern.ch/work/p/pharris/public/tmp/CMSSW_5_3_13/src/CondFormats                      $CMSSW_BASE/src
 
 git clone https://github.com/violatingcp/Jets_Short.git
 mv Jets_Short/RecoJets/JetProducers/data/*.xml RecoJets/JetProducers/data/
