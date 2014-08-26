@@ -392,7 +392,8 @@ void NtuplerMod::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   
   if(fIsActiveEle) {
     fEleArr->Clear();
-    fFillerEle->fill(fEleArr, iEvent, iSetup, *pv, nvertices, fPFNoPU, fTrigger->fRecords, *hTrgEvt);
+    //fFillerEle->fill(fEleArr, iEvent, iSetup, *pv, nvertices, fPFNoPU, fTrigger->fRecords, *hTrgEvt);
+    fFillerEle->fill(fEleArr, iEvent, iSetup, *pv, nvertices, fPFNoPU, fTrigger->fRecords, &(*hTrgEvt));
   }
 
   if(fIsActiveMuon) {
@@ -402,7 +403,8 @@ void NtuplerMod::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
   if(fIsActivePhoton) {
     fPhotonArr->Clear();  
-    fFillerPhoton->fill(fPhotonArr, iEvent, iSetup, *pv, fPFNoPU, fPFPU, fTrigger->fRecords, *hTrgEvt);
+    //fFillerPhoton->fill(fPhotonArr, iEvent, iSetup, *pv, fPFNoPU, fPFPU, fTrigger->fRecords, *hTrgEvt);
+    fFillerPhoton->fill(fPhotonArr, iEvent, iSetup, *pv, fPFNoPU, fPFPU, fTrigger->fRecords, &(*hTrgEvt));
   }
 
   if(fIsActiveTau) {

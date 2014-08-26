@@ -35,7 +35,7 @@ std::pair<double,double> ElectronMomentumCorrector::ElectronMomentumCorrector::e
   const int	           nvertices,
   const unsigned int       runNum,
   const edm::EventSetup   &iSetup,
-  EcalClusterLazyTools    &lazyTools,
+  SuperClusterHelper      &scHelper,
   const bool               printDebug)
 {
   if(printDebug) {
@@ -48,14 +48,14 @@ std::pair<double,double> ElectronMomentumCorrector::ElectronMomentumCorrector::e
                                 rho,
 				nvertices,
 				iSetup,
-				lazyTools,
+				scHelper,
 				printDebug);  
   
   result = fSmearScale.evaluate(ele,
                                 result.first,
 			        result.second,
 			        runNum,
-				lazyTools,
+				scHelper,
 				printDebug);
   
   result = fEpCombine.evaluate(ele,

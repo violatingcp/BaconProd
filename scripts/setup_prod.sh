@@ -6,15 +6,6 @@ if test -z $CMSSW_VERSION; then
   return 0;
 fi
 
-if test -z "$CVSROOT"; then
-  echo "[BaconProd] Need to set CVSROOT!"
-  echo "[BaconProd] Something like:"
-  echo "            export CVSROOT=:ext:pharris@lxplus.cern.ch:/afs/cern.ch/user/c/cvscmssw/public/CMSSW"
-  echo
-  return 0;
-fi
-
-
 CURRDIR=$PWD
 PATCHDIR=$CMSSW_BASE/src/BaconProd/patch
 cd $CMSSW_BASE/src
@@ -23,31 +14,19 @@ cd $CMSSW_BASE/src
 ### MuScleFit corrections for muons
 echo
 echo "[BaconProd] Checking out MuScleFit package..."
-cvs co -r muscle_v4_2_0 UserCode/scasasso/MuScleFit/Calibration
-mv UserCode/scasasso/MuScleFit ./
-rm -rf UserCode
-
+cp -r /afs/cern.ch/work/p/pharris/public/bacon/prod/CMSSW_5_3_13/src/MuScleFit $CMSSW_BASE/src/
 
 ### Electron MVA ID
 echo
 echo "[BaconProd] Checking out Electron MVA ID package..."
-cvs co -r V00-00-30-02 UserCode/EGamma/EGammaAnalysisTools
-mv UserCode/EGamma ./
-rm -rf UserCode
-mv EGamma/EGammaAnalysisTools/test/BuildFile.xml EGamma/EGammaAnalysisTools/test/BuildFile.xmlSilent
-mv EGamma/EGammaAnalysisTools/plugins/BuildFile.xml EGamma/EGammaAnalysisTools/plugins/BuildFile.xmlSilent
-cp $PATCHDIR/EGamma/EGammaAnalysisTools/interface/EGammaMvaEleEstimator.h.53Xpatch EGamma/EGammaAnalysisTools/interface/EGammaMvaEleEstimator.h
-
-### New Tau Id
-git cms-merge-topic -u cms-tau-pog:CMSSW_5_3_X_boostedTaus_2013Dec17
-
+cp -r /afs/cern.ch/work/p/pharris/public/bacon/prod/CMSSW_5_3_13/src/EGamma $CMSSW_BASE/src/
 
 ### MET filters
 echo
 echo "[BaconProd] Checking out packages for MET filters..."
-cvs co -r V00-00-13-01 RecoMET/METFilters
-cvs co -r V00-00-08    RecoMET/METAnalyzers
-
+#cvs co -r V00-00-13-01 RecoMET/METFilters
+#cvs co -r V00-00-08    RecoMET/METAnalyzers
+cp -r /afs/cern.ch/work/p/pharris//public/bacon/prod/CMSSW_7_1_0_pre4/src/RecoMET/            $CMSSW_BASE/src/
 
 ### Jet/MET packages
 echo
@@ -55,11 +34,8 @@ echo "[BaconProd] Checking out jet/MET packages..."
 git clone https://github.com/nhanvtran/JetTools.git
 cp $PATCHDIR/JetTools/AnalyzerToolbox/python/njettinessadder_cfi.py JetTools/AnalyzerToolbox/python/
 
-mkdir RecoMET
-cp -r /afs/cern.ch/work/p/pharris/public/bacon/prod/CMSSW_5_3_18/src/RecoMET/METPUSubtraction RecoMET/METPUSubtraction
-cp -r /afs/cern.ch/work/p/pharris/public/tmp/CMSSW_5_3_13/src/DataFormats .
-cp -r /afs/cern.ch/work/p/pharris/public/tmp/CMSSW_5_3_13/src/RecoJets .
-cp -r /afs/cern.ch/work/p/pharris/public/tmp/CMSSW_5_3_13/src/CondFormats .
+cp -r /afs/cern.ch/work/p/pharris/public/tmp/CMSSW_5_3_13/src/RecoJets                         $CMSSW_BASE/src
+cp -r /afs/cern.ch/work/p/pharris/public/tmp/CMSSW_5_3_13/src/CondFormats                      $CMSSW_BASE/src
 
 git clone https://github.com/violatingcp/Jets_Short.git
 mv Jets_Short/RecoJets/JetProducers/data/*.xml RecoJets/JetProducers/data/

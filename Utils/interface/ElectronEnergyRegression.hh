@@ -12,7 +12,7 @@
 #include <utility>
 
 class GBRForest;
-class EcalClusterLazyTools;
+class SuperClusterHelper;
 namespace reco { class GsfElectron; }
 namespace edm  { class EventSetup; }
 
@@ -41,7 +41,7 @@ namespace baconhep {
                                         const double             rho,                // event energy density
 					const int                nvertices,          // number of primary vertices
 	                                const edm::EventSetup   &iSetup,             // event setup handle
-					EcalClusterLazyTools    &lazyTools,          // class to compute ECAL cluster quantities
+					SuperClusterHelper      &scHelper,           // class to compute ECAL cluster quantities
 					const bool               printDebug=false);
 
     private:

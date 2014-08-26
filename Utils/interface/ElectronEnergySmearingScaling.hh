@@ -19,7 +19,7 @@
 #define NCAT 8
 
 class TRandom3;
-class EcalClusterLazyTools;
+class SuperClusterHelper;
 namespace reco { class GsfElectron; }
 
 namespace baconhep {
@@ -83,7 +83,7 @@ namespace baconhep {
         const double	         energy,     // electron energy
 	const double	         error,      // eletron energy uncertainty
 	const unsigned int       runNum,     // run number
-	EcalClusterLazyTools    &lazyTools,  // class to compute ECAL cluster quantities
+	SuperClusterHelper      &scHelper,  // class to compute ECAL cluster quantities
 	const bool               printDebug=false);
   
     protected:
