@@ -41,12 +41,14 @@ namespace baconhep
       std::string fBSName;
       std::string fPFMETName;
       std::string fPFMETCName;
+      std::string fPuppETName;
       std::string fMVAMETName;
       std::string fMVAMETUName;
       std::string fMVAMET0Name;
       std::string fRhoIsoName;
       std::string fRhoJetName;
       bool        fFillMET;
+      bool        fFillMETFilters;
   };
 }
 #endif
