@@ -1,31 +1,33 @@
 import FWCore.ParameterSet.Config as cms
 #from RecoJets.Configuration.GenJetParticles_cff import *
-from RecoJets.Configuration.RecoGenJets_cff     import ak5GenJets
+
+#from RecoJets.Configuration.RecoGenJets_cff     import ak5GenJets
+from RecoJets.JetProducers.ak5GenJets_cfi import ak5GenJets
 from RecoJets.JetProducers.ak5PFJets_cfi        import ak5PFJets
 from RecoJets.JetProducers.ak5PFJetsPruned_cfi  import ak5PFJetsPruned
 
-genParticlesForJets = cms.EDProducer("InputGenJetsParticleSelector",
-    src = cms.InputTag("genParticles"),
-    ignoreParticleIDs = cms.vuint32(
-         1000022,
-         1000012, 1000014, 1000016,
-         2000012, 2000014, 2000016,
-         1000039, 5100039,
-         4000012, 4000014, 4000016,
-         9900012, 9900014, 9900016,
-         39),
-    partonicFinalState = cms.bool(False),
-    excludeResonances = cms.bool(True),
-    excludeFromResonancePids = cms.vuint32(12, 13, 14, 16),
-    tausAsJets = cms.bool(False)
-)
-genParticlesForJetsNoNu = genParticlesForJets.clone()
-genParticlesForJetsNoNu.ignoreParticleIDs += cms.vuint32( 12,14,16)
+# genParticlesForJets = cms.EDProducer("InputGenJetsParticleSelector",
+#     src = cms.InputTag("packedGenParticles"),
+#     ignoreParticleIDs = cms.vuint32(
+#          1000022,
+#          1000012, 1000014, 1000016,
+#          2000012, 2000014, 2000016,
+#          1000039, 5100039,
+#          4000012, 4000014, 4000016,
+#          9900012, 9900014, 9900016,
+#          39),
+#     partonicFinalState = cms.bool(False),
+#     excludeResonances = cms.bool(True),
+#     excludeFromResonancePids = cms.vuint32(12, 13, 14, 16),
+#     tausAsJets = cms.bool(False)
+# )
+# genParticlesForJetsNoNu = genParticlesForJets.clone()
+# genParticlesForJetsNoNu.ignoreParticleIDs += cms.vuint32( 12,14,16)
 
 # Flavour byReference
 partons  = cms.EDProducer("PartonSelector",
                           withLeptons = cms.bool(False),
-                          src = cms.InputTag("genParticles")
+                          src = cms.InputTag("prunedGenParticles")
                           )
 
 AK4GenJets = ak5GenJets.clone(
@@ -97,36 +99,51 @@ AK4QGTagger.srcJets                               = cms.InputTag('AK4PFJets')
 AK4QGTaggerSubJets                                = AK4QGTagger.clone()
 AK4QGTaggerSubJets.srcJets                        = cms.InputTag('AK4caPFJetsPruned','SubJets')
 
-from JetTools.AnalyzerToolbox.njettinessadder_cfi import *
+from JetTools.AnalyzerToolbox.AnalyzerJetToolbox_cff import *
 AK4Njettiness                                     = Njettiness.clone()       
 AK4Njettiness.src                                 =  cms.InputTag('AK4PFJets')
 
 
+# genjetsequence = cms.Sequence(
+#     genParticlesForJets            *
+#     genParticlesForJetsNoNu        *
+#     partons *
+#     goodOfflinePrimaryVerticesQG   *
+#     kt6PFJetsQG                    *
+#     kt6PFJetsIsoQG                 *
+#     ak5GenJets)
+
+# genjetsequence = cms.Sequence(
+#     genParticlesForJets            *
+#     genParticlesForJetsNoNu        *
+#     partons *
+#     ak5GenJets)
+
 genjetsequence = cms.Sequence(
-    genParticlesForJets            *
-    genParticlesForJetsNoNu        *
     partons *
-    goodOfflinePrimaryVerticesQG   *
-    kt6PFJetsQG                    *
-    kt6PFJetsIsoQG                 *
     ak5GenJets)
 
 AK4genjetsequence = cms.Sequence(
-    AK4GenJets                     * 
-    AK4jetFlavor                   
+    AK4GenJets                   
 )
+
+# AK4jetsequence = cms.Sequence(
+#     AK4PFJets                      *
+#     AK4caPFJetsPruned              *
+#     AK4jetTracksAssociatorAtVertex    *
+#     AK4jetImpactParameterTagInfos     *
+#     AK4jetSecondaryVertexTagInfos     *
+#     AK4jetTracksAssociatorAtVertexSJ  *
+#     AK4jetImpactParameterTagInfosSJ   *
+#     AK4jetSecondaryVertexTagInfosSJ   *
+#     AK4jetCombinedSecondaryVertexBJetTags * 
+#     AK4jetCombinedSecondaryVertexBJetTagsSJ  *
+#     AK4QGTagger                       *
+#     AK4QGTaggerSubJets                *                
+#     AK4Njettiness                     
+#     )
+
 AK4jetsequence = cms.Sequence(
-    AK4PFJets                      *
-    AK4caPFJetsPruned              *
-    AK4jetTracksAssociatorAtVertex    *
-    AK4jetImpactParameterTagInfos     *
-    AK4jetSecondaryVertexTagInfos     *
-    AK4jetTracksAssociatorAtVertexSJ  *
-    AK4jetImpactParameterTagInfosSJ   *
-    AK4jetSecondaryVertexTagInfosSJ   *
-    AK4jetCombinedSecondaryVertexBJetTags * 
-    AK4jetCombinedSecondaryVertexBJetTagsSJ  *
-    AK4QGTagger                       *
-    AK4QGTaggerSubJets                *                
-    AK4Njettiness                     
+    AK4PFJets
     )
+

@@ -69,23 +69,26 @@ AK4QGTaggerCHS.srcJets                               = cms.InputTag('AK4PFJetsCH
 AK4QGTaggerSubJetsCHS                                = AK4QGTaggerCHS.clone()
 AK4QGTaggerSubJetsCHS.srcJets                        = cms.InputTag('AK4caPFJetsPrunedCHS','SubJets')
 
-from JetTools.AnalyzerToolbox.njettinessadder_cfi import *
+from JetTools.AnalyzerToolbox.AnalyzerJetToolbox_cff import *
 AK4NjettinessCHS                                     = Njettiness.clone()       
 AK4NjettinessCHS.src                                 =  cms.InputTag('AK4PFJetsCHS')
 
+# AK4jetsequenceCHS = cms.Sequence(
+#     AK4PFJetsCHS                      *
+#     AK4caPFJetsPrunedCHS              *
+#     AK4jetTracksAssociatorAtVertexCHS    *
+#     AK4jetImpactParameterTagInfosCHS     *
+#     AK4jetSecondaryVertexTagInfosCHS     *
+#     AK4jetTracksAssociatorAtVertexSJCHS  *
+#     AK4jetImpactParameterTagInfosSJCHS   *
+#     AK4jetSecondaryVertexTagInfosSJCHS   *
+#     AK4jetCombinedSecondaryVertexBJetTagsCHS * 
+#     AK4jetCombinedSecondaryVertexBJetTagsSJCHS  *
+#     AK4QGTaggerCHS                       *
+#     AK4QGTaggerSubJetsCHS                *                
+#     AK4NjettinessCHS                     *
+#     AK4jetFlavorCHS                   
+#     )
+
 AK4jetsequenceCHS = cms.Sequence(
-    AK4PFJetsCHS                      *
-    AK4caPFJetsPrunedCHS              *
-    AK4jetTracksAssociatorAtVertexCHS    *
-    AK4jetImpactParameterTagInfosCHS     *
-    AK4jetSecondaryVertexTagInfosCHS     *
-    AK4jetTracksAssociatorAtVertexSJCHS  *
-    AK4jetImpactParameterTagInfosSJCHS   *
-    AK4jetSecondaryVertexTagInfosSJCHS   *
-    AK4jetCombinedSecondaryVertexBJetTagsCHS * 
-    AK4jetCombinedSecondaryVertexBJetTagsSJCHS  *
-    AK4QGTaggerCHS                       *
-    AK4QGTaggerSubJetsCHS                *                
-    AK4NjettinessCHS                     *
-    AK4jetFlavorCHS                   
-    )
+    AK4PFJetsCHS)

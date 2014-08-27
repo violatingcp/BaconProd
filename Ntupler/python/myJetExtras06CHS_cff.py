@@ -50,7 +50,7 @@ AK6QGTaggerCHS.srcJets                               = cms.InputTag('AK6PFJetsCH
 AK6QGTaggerSubJetsCHS                                = AK6QGTaggerCHS.clone()
 AK6QGTaggerSubJetsCHS.srcJets                        = cms.InputTag('AK6caPFJetsPrunedCHS','SubJets')
 
-from JetTools.AnalyzerToolbox.njettinessadder_cfi import *
+from JetTools.AnalyzerToolbox.AnalyzerJetToolbox_cff import *
 AK6NjettinessCHS                                     = Njettiness.clone()       
 AK6NjettinessCHS.src                                 =  cms.InputTag('AK6PFJetsCHS')
 

@@ -69,7 +69,7 @@ AK8QGTaggerPuppi.srcJets                               = cms.InputTag('AK8PFJets
 AK8QGTaggerSubJetsPuppi                                = AK8QGTaggerPuppi.clone()
 AK8QGTaggerSubJetsPuppi.srcJets                        = cms.InputTag('AK8caPFJetsPrunedPuppi','SubJets')
 
-from JetTools.AnalyzerToolbox.njettinessadder_cfi import *
+from JetTools.AnalyzerToolbox.AnalyzerJetToolbox_cff import *
 AK8NjettinessPuppi                                     = Njettiness.clone()       
 AK8NjettinessPuppi.src                                 =  cms.InputTag('AK8PFJetsPuppi')
 

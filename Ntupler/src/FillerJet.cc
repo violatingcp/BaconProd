@@ -192,9 +192,7 @@ double FillerJet::correction(fastjet::PseudoJet &iJet,double iRho) {
 //--------------------------------------------------------------------------------------------------
 void FillerJet::fill(TClonesArray *array, TClonesArray *iExtraArray,TClonesArray *iTopArray,
                      const edm::Event &iEvent, const edm::EventSetup &iSetup, 
-		     const reco::Vertex	&pv,
-		     const std::vector<TriggerRecord> &triggerRecords,
-		     const trigger::TriggerEvent &triggerEvent) 
+		     const reco::Vertex	&pv)
 {
   assert(array);
   assert(!fComputeFullJetInfo || iExtraArray);
@@ -204,7 +202,7 @@ void FillerJet::fill(TClonesArray *array, TClonesArray *iExtraArray,TClonesArray
   // Get jet collection
   edm::Handle<reco::PFJetCollection> hJetProduct;
   iEvent.getByLabel(fJetName,hJetProduct);
-  assert(hJetProduct.isValid());
+  //assert(hJetProduct.isValid());
   const reco::PFJetCollection *jetCol = hJetProduct.product();
   
   // Get gen jet collection
@@ -212,220 +210,223 @@ void FillerJet::fill(TClonesArray *array, TClonesArray *iExtraArray,TClonesArray
   const reco::GenJetCollection *genJetCol = 0;
   if(fUseGen) { 
     iEvent.getByLabel(fGenJetName,hGenJetProduct);
-    assert(hGenJetProduct.isValid());
+    //assert(hGenJetProduct.isValid());
     genJetCol = hGenJetProduct.product();
   }
 
-  // Get Jet Flavor Match
-  edm::Handle<reco::JetFlavourMatchingCollection> jetFlavourMatch;
-  if(fUseGen) iEvent.getByLabel(fJetFlavorName, jetFlavourMatch);
-  edm::Handle<reco::JetFlavourMatchingCollection> jetFlavourMatchPhys;
-  if(fUseGen) iEvent.getByLabel(fJetFlavorPhysName, jetFlavourMatchPhys);
+  std::cout << "njets: " << jetCol->size() << std::endl;
+  std::cout << "gjets: " << genJetCol->size() << std::endl;
 
-  // Get pruned jet collection
-  edm::Handle<reco::BasicJetCollection> hPruneJetProduct;
-  iEvent.getByLabel(fPruneJetName,hPruneJetProduct);
-  assert(hPruneJetProduct.isValid());
-  const reco::BasicJetCollection *pruneJetCol = hPruneJetProduct.product();
+  // // Get Jet Flavor Match
+  // edm::Handle<reco::JetFlavourMatchingCollection> jetFlavourMatch;
+  // if(fUseGen) iEvent.getByLabel(fJetFlavorName, jetFlavourMatch);
+  // edm::Handle<reco::JetFlavourMatchingCollection> jetFlavourMatchPhys;
+  // if(fUseGen) iEvent.getByLabel(fJetFlavorPhysName, jetFlavourMatchPhys);
 
-  // Get pruned sub jet collection
-  edm::Handle<reco::PFJetCollection> hSubJetProduct;
-  edm::InputTag subJetTag(fSubJetName,"SubJets");
-  iEvent.getByLabel(subJetTag,hSubJetProduct);
-  assert(hSubJetProduct.isValid());
-  //const reco::PFJetCollection *subJetCol = hSubJetProduct.product();
+  // // Get pruned jet collection
+  // edm::Handle<reco::BasicJetCollection> hPruneJetProduct;
+  // iEvent.getByLabel(fPruneJetName,hPruneJetProduct);
+  // assert(hPruneJetProduct.isValid());
+  // const reco::BasicJetCollection *pruneJetCol = hPruneJetProduct.product();
+
+  // // Get pruned sub jet collection
+  // edm::Handle<reco::PFJetCollection> hSubJetProduct;
+  // edm::InputTag subJetTag(fSubJetName,"SubJets");
+  // iEvent.getByLabel(subJetTag,hSubJetProduct);
+  // assert(hSubJetProduct.isValid());
+  // //const reco::PFJetCollection *subJetCol = hSubJetProduct.product();
   
-  // Get vertex collection
-  edm::Handle<reco::VertexCollection> hVertexProduct;
-  iEvent.getByLabel(fPVName,hVertexProduct);
-  assert(hVertexProduct.isValid());
-  const reco::VertexCollection *pvCol = hVertexProduct.product();
+  // // Get vertex collection
+  // edm::Handle<reco::VertexCollection> hVertexProduct;
+  // iEvent.getByLabel(fPVName,hVertexProduct);
+  // assert(hVertexProduct.isValid());
+  // const reco::VertexCollection *pvCol = hVertexProduct.product();
 
-  // Get event energy density for jet correction
-  edm::Handle<double> hRho;
-  edm::InputTag rhoTag(fRhoName,"rho","RECO");
-  iEvent.getByLabel(rhoTag,hRho);
-  assert(hRho.isValid()); 
+  // // Get event energy density for jet correction
+  // edm::Handle<double> hRho;
+  // edm::InputTag rhoTag(fRhoName,"rho","RECO");
+  // iEvent.getByLabel(rhoTag,hRho);
+  // assert(hRho.isValid()); 
  
-  // Get b-jet tagger
-  edm::Handle<reco::JetTagCollection> hCSVbtags;
-  iEvent.getByLabel(fCSVbtagName, hCSVbtags);
-  assert(hCSVbtags.isValid());
+  // // Get b-jet tagger
+  // edm::Handle<reco::JetTagCollection> hCSVbtags;
+  // iEvent.getByLabel(fCSVbtagName, hCSVbtags);
+  // assert(hCSVbtags.isValid());
 
-  // Get b sub-jets 
-  edm::Handle<reco::JetTagCollection> hCSVbtagsSubJets;
-  iEvent.getByLabel(fCSVbtagSubJetName, hCSVbtagsSubJets);
-  assert(hCSVbtagsSubJets.isValid());
-  reco::JetTagCollection hCSVbtagSubJets = *(hCSVbtagsSubJets.product());
+  // // Get b sub-jets 
+  // edm::Handle<reco::JetTagCollection> hCSVbtagsSubJets;
+  // iEvent.getByLabel(fCSVbtagSubJetName, hCSVbtagsSubJets);
+  // assert(hCSVbtagsSubJets.isValid());
+  // reco::JetTagCollection hCSVbtagSubJets = *(hCSVbtagsSubJets.product());
   
-  // Get N-subjettiness moments
-  edm::Handle<edm::ValueMap<float> > hTau1;
-  iEvent.getByLabel(fJettinessName,"tau1",hTau1);                                                                                                                                                      
-  assert(hTau1.isValid());
-  edm::Handle<edm::ValueMap<float> > hTau2;
-  iEvent.getByLabel(fJettinessName,"tau2",hTau2);
-  assert(hTau2.isValid());
-  edm::Handle<edm::ValueMap<float> > hTau3;
-  iEvent.getByLabel(fJettinessName,"tau3",hTau3); 
-  assert(hTau3.isValid());
-  edm::Handle<edm::ValueMap<float> > hTau4;
-  iEvent.getByLabel(fJettinessName,"tau3",hTau4); 
-  assert(hTau4.isValid());
+  // // Get N-subjettiness moments
+  // edm::Handle<edm::ValueMap<float> > hTau1;
+  // iEvent.getByLabel(fJettinessName,"tau1",hTau1);                                                                                                                                                      
+  // assert(hTau1.isValid());
+  // edm::Handle<edm::ValueMap<float> > hTau2;
+  // iEvent.getByLabel(fJettinessName,"tau2",hTau2);
+  // assert(hTau2.isValid());
+  // edm::Handle<edm::ValueMap<float> > hTau3;
+  // iEvent.getByLabel(fJettinessName,"tau3",hTau3); 
+  // assert(hTau3.isValid());
+  // edm::Handle<edm::ValueMap<float> > hTau4;
+  // iEvent.getByLabel(fJettinessName,"tau3",hTau4); 
+  // assert(hTau4.isValid());
 
-  //Get Quark Gluon Likelihood
-  edm::Handle<edm::ValueMap<float> > hQGLikelihood; 
-  iEvent.getByLabel(fQGLikelihood,"qgLikelihood",hQGLikelihood); 
-  assert(hQGLikelihood.isValid());
+  // //Get Quark Gluon Likelihood
+  // edm::Handle<edm::ValueMap<float> > hQGLikelihood; 
+  // iEvent.getByLabel(fQGLikelihood,"qgLikelihood",hQGLikelihood); 
+  // assert(hQGLikelihood.isValid());
 
-  //Get Quark Gluon Likelihood on subjets
-  edm::Handle<edm::ValueMap<float> > hQGLikelihoodSubJets;
-  iEvent.getByLabel(fQGLikelihoodSubJets,"qgLikelihood",hQGLikelihoodSubJets);
-  assert(hQGLikelihoodSubJets.isValid());
+  // //Get Quark Gluon Likelihood on subjets
+  // edm::Handle<edm::ValueMap<float> > hQGLikelihoodSubJets;
+  // iEvent.getByLabel(fQGLikelihoodSubJets,"qgLikelihood",hQGLikelihoodSubJets);
+  // assert(hQGLikelihoodSubJets.isValid());
   
-  int pId = 0; 
-  TClonesArray &rArray      = *array;
-  TClonesArray &rExtraArray = *iExtraArray;
-  TClonesArray &rTopArray   = *iTopArray;
-  for(reco::PFJetCollection::const_iterator itJet = jetCol->begin(); itJet!=jetCol->end(); ++itJet) {
-    const double ptRaw = itJet->pt();
-    pId++;
-    // input to jet corrections
-    fJetCorr->setJetPt(ptRaw);
-    fJetCorr->setJetEta(itJet->eta());
-    fJetCorr->setJetPhi(itJet->phi());
-    fJetCorr->setJetE(itJet->energy());
-    fJetCorr->setRho(*hRho);
-    fJetCorr->setJetA(itJet->jetArea());
-    fJetCorr->setJetEMF(-99.0);
-    double jetcorr = fJetCorr->getCorrection();
+  // int pId = 0; 
+  // TClonesArray &rArray      = *array;
+  // TClonesArray &rExtraArray = *iExtraArray;
+  // TClonesArray &rTopArray   = *iTopArray;
+  // for(reco::PFJetCollection::const_iterator itJet = jetCol->begin(); itJet!=jetCol->end(); ++itJet) {
+  //   const double ptRaw = itJet->pt();
+  //   pId++;
+  //   // input to jet corrections
+  //   fJetCorr->setJetPt(ptRaw);
+  //   fJetCorr->setJetEta(itJet->eta());
+  //   fJetCorr->setJetPhi(itJet->phi());
+  //   fJetCorr->setJetE(itJet->energy());
+  //   fJetCorr->setRho(*hRho);
+  //   fJetCorr->setJetA(itJet->jetArea());
+  //   fJetCorr->setJetEMF(-99.0);
+  //   double jetcorr = fJetCorr->getCorrection();
 
-    // jet pT cut (both raw and corrected pT must exceed threshold)
-    if(ptRaw*jetcorr < fMinPt || ptRaw < fMinPt) continue;
+  //   // jet pT cut (both raw and corrected pT must exceed threshold)
+  //   if(ptRaw*jetcorr < fMinPt || ptRaw < fMinPt) continue;
     
-    // jet eta cut to prevent exception in computing JEC uncertainty
-    if(fabs(itJet->eta()) >= 5.4) continue;
+  //   // jet eta cut to prevent exception in computing JEC uncertainty
+  //   if(fabs(itJet->eta()) >= 5.4) continue;
 
-    fJetUnc->setJetPt ( ptRaw  );
-    fJetUnc->setJetEta( itJet->eta() );
-    double jetunc = fJetUnc->getUncertainty(true);
+  //   fJetUnc->setJetPt ( ptRaw  );
+  //   fJetUnc->setJetEta( itJet->eta() );
+  //   double jetunc = fJetUnc->getUncertainty(true);
 
-    bool passLoose = JetTools::passPFLooseID(*itJet);
+  //   bool passLoose = JetTools::passPFLooseID(*itJet);
     
-    // construct object and place in array
-    assert(rArray.GetEntries() < rArray.GetSize());
-    const int index = rArray.GetEntries();
-    new(rArray[index]) baconhep::TJet();
-    baconhep::TJet    *pJet = (baconhep::TJet*)rArray[index];
-    baconhep::TAddJet *pAddJet = 0; 
-    if(fComputeFullJetInfo) {
-      assert(rExtraArray.GetEntries() < rExtraArray.GetSize());
-      const int extraIndex = rExtraArray.GetEntries();
-      new(rExtraArray[extraIndex]) baconhep::TAddJet();
-      pAddJet = (baconhep::TAddJet*)rExtraArray[extraIndex];
-      pAddJet->index = index;
-    }
+  //   // construct object and place in array
+  //   assert(rArray.GetEntries() < rArray.GetSize());
+  //   const int index = rArray.GetEntries();
+  //   new(rArray[index]) baconhep::TJet();
+  //   baconhep::TJet    *pJet = (baconhep::TJet*)rArray[index];
+  //   baconhep::TAddJet *pAddJet = 0; 
+  //   if(fComputeFullJetInfo) {
+  //     assert(rExtraArray.GetEntries() < rExtraArray.GetSize());
+  //     const int extraIndex = rExtraArray.GetEntries();
+  //     new(rExtraArray[extraIndex]) baconhep::TAddJet();
+  //     pAddJet = (baconhep::TAddJet*)rExtraArray[extraIndex];
+  //     pAddJet->index = index;
+  //   }
 
-    baconhep::TTopJet *pTopJet = 0; 
-    if(fComputeFullJetInfo && itJet->pt() > 150.) {
-      assert(rTopArray.GetEntries() < rTopArray.GetSize());
-      const int topIndex = rTopArray.GetEntries();
-      new(rTopArray[topIndex]) baconhep::TTopJet();
-      pTopJet = (baconhep::TTopJet*)rTopArray[topIndex];
-      pTopJet->index = index;
-    }
+  //   baconhep::TTopJet *pTopJet = 0; 
+  //   if(fComputeFullJetInfo && itJet->pt() > 150.) {
+  //     assert(rTopArray.GetEntries() < rTopArray.GetSize());
+  //     const int topIndex = rTopArray.GetEntries();
+  //     new(rTopArray[topIndex]) baconhep::TTopJet();
+  //     pTopJet = (baconhep::TTopJet*)rTopArray[topIndex];
+  //     pTopJet->index = index;
+  //   }
   
-    //
-    // Kinematics
-    //==============================    
-    pJet->pt    = ptRaw * jetcorr;
-    pJet->eta   = itJet->eta();
-    pJet->phi   = itJet->phi();
-    pJet->mass  = itJet->mass() * jetcorr;
-    pJet->ptRaw = ptRaw;
-    pJet->area  = itJet->jetArea();
-    pJet->unc   = jetunc;
+  //   //
+  //   // Kinematics
+  //   //==============================    
+  //   pJet->pt    = ptRaw * jetcorr;
+  //   pJet->eta   = itJet->eta();
+  //   pJet->phi   = itJet->phi();
+  //   pJet->mass  = itJet->mass() * jetcorr;
+  //   pJet->ptRaw = ptRaw;
+  //   pJet->area  = itJet->jetArea();
+  //   pJet->unc   = jetunc;
     
-    //
-    // Impact Parameter
-    //==============================
-    pJet->d0 = JetTools::jetD0(*itJet, pv);
-    pJet->dz = JetTools::jetDz(*itJet, pv);
-    //
-    // Identification
-    //==============================
-    reco::PFJetRef jetRef(hJetProduct, itJet - jetCol->begin());
-    reco::JetBaseRef jetBaseRef(jetRef);
-    pJet->csv        = (*(hCSVbtags.product()))     [jetBaseRef];
-    pJet->qgid       = (*(hQGLikelihood.product())) [jetBaseRef];
-    pJet->tau1       = (*(hTau1.product())) [jetBaseRef];
-    pJet->tau2       = (*(hTau2.product())) [jetBaseRef];
-    pJet->tau3       = (*(hTau3.product())) [jetBaseRef];
-    pJet->tau4       = (*(hTau4.product())) [jetBaseRef];
-    const reco::BasicJet* matchJet = match(&(*itJet),pruneJetCol);
-    double *lQG  = JetTools::subJetBTag(*itJet,hCSVbtagSubJets                                   ,fConeSize );
-    double *lCSV = JetTools::subJetQG  (*itJet,hSubJetProduct,(*(hQGLikelihoodSubJets.product())),fConeSize);
-    pJet->qg1        = lQG[0];
-    pJet->qg2        = lQG[1];
-    pJet->csv1       = lCSV[0];
-    pJet->csv2       = lCSV[1];
-    if(matchJet) pJet->prunedm = matchJet->mass();
-    pJet->nCharged   = itJet->chargedMultiplicity();
-    pJet->nNeutrals  = itJet->neutralMultiplicity();
-    pJet->nParticles = itJet->getPFConstituents().size();
-    pJet->beta       = JetTools::beta(*itJet, pv);
-    pJet->betaStar   = JetTools::betaStar(*itJet, pv, pvCol);
-    pJet->dR2Mean    = JetTools::dR2Mean(*itJet);
-    pJet->ptD        = JetTools::jetWidth(*itJet);
-    pJet->q          = JetTools::jetCharge(*itJet);
-    TLorentzVector lPull = JetTools::jetPull(*itJet);   //Color Flow observables
-    pJet->pull       = lPull.Pt();
-    pJet->pullAngle  = JetTools::jetPullAngle(*itJet,hSubJetProduct,fConeSize);
-    pJet->mva = -2;
-    if(passLoose) {
-      double dRMean = JetTools::dRMean(*itJet);
-      double frac01 = JetTools::frac(*itJet,0.1);
-      double frac02 = JetTools::frac(*itJet,0.2);
-      double frac03 = JetTools::frac(*itJet,0.3);
-      double frac04 = JetTools::frac(*itJet,0.4);
-      double frac05 = JetTools::frac(*itJet,0.5);
+  //   //
+  //   // Impact Parameter
+  //   //==============================
+  //   pJet->d0 = JetTools::jetD0(*itJet, pv);
+  //   pJet->dz = JetTools::jetDz(*itJet, pv);
+  //   //
+  //   // Identification
+  //   //==============================
+  //   reco::PFJetRef jetRef(hJetProduct, itJet - jetCol->begin());
+  //   reco::JetBaseRef jetBaseRef(jetRef);
+  //   pJet->csv        = (*(hCSVbtags.product()))     [jetBaseRef];
+  //   pJet->qgid       = (*(hQGLikelihood.product())) [jetBaseRef];
+  //   pJet->tau1       = (*(hTau1.product())) [jetBaseRef];
+  //   pJet->tau2       = (*(hTau2.product())) [jetBaseRef];
+  //   pJet->tau3       = (*(hTau3.product())) [jetBaseRef];
+  //   pJet->tau4       = (*(hTau4.product())) [jetBaseRef];
+  //   const reco::BasicJet* matchJet = match(&(*itJet),pruneJetCol);
+  //   double *lQG  = JetTools::subJetBTag(*itJet,hCSVbtagSubJets                                   ,fConeSize );
+  //   double *lCSV = JetTools::subJetQG  (*itJet,hSubJetProduct,(*(hQGLikelihoodSubJets.product())),fConeSize);
+  //   pJet->qg1        = lQG[0];
+  //   pJet->qg2        = lQG[1];
+  //   pJet->csv1       = lCSV[0];
+  //   pJet->csv2       = lCSV[1];
+  //   if(matchJet) pJet->prunedm = matchJet->mass();
+  //   pJet->nCharged   = itJet->chargedMultiplicity();
+  //   pJet->nNeutrals  = itJet->neutralMultiplicity();
+  //   pJet->nParticles = itJet->getPFConstituents().size();
+  //   pJet->beta       = JetTools::beta(*itJet, pv);
+  //   pJet->betaStar   = JetTools::betaStar(*itJet, pv, pvCol);
+  //   pJet->dR2Mean    = JetTools::dR2Mean(*itJet);
+  //   pJet->ptD        = JetTools::jetWidth(*itJet);
+  //   pJet->q          = JetTools::jetCharge(*itJet);
+  //   TLorentzVector lPull = JetTools::jetPull(*itJet);   //Color Flow observables
+  //   pJet->pull       = lPull.Pt();
+  //   pJet->pullAngle  = JetTools::jetPullAngle(*itJet,hSubJetProduct,fConeSize);
+  //   pJet->mva = -2;
+  //   if(passLoose) {
+  //     double dRMean = JetTools::dRMean(*itJet);
+  //     double frac01 = JetTools::frac(*itJet,0.1);
+  //     double frac02 = JetTools::frac(*itJet,0.2);
+  //     double frac03 = JetTools::frac(*itJet,0.3);
+  //     double frac04 = JetTools::frac(*itJet,0.4);
+  //     double frac05 = JetTools::frac(*itJet,0.5);
       
-      fJetCorrForID->setJetPt(ptRaw);
-      fJetCorrForID->setJetEta(itJet->eta());
-      fJetCorrForID->setJetPhi(itJet->phi());
-      fJetCorrForID->setJetE(itJet->energy());
-      fJetCorrForID->setRho(*hRho);
-      fJetCorrForID->setJetA(itJet->jetArea());
-      fJetCorrForID->setJetEMF(-99.0);
-      double jetcorrForID = fJetCorrForID->getCorrection();
+  //     fJetCorrForID->setJetPt(ptRaw);
+  //     fJetCorrForID->setJetEta(itJet->eta());
+  //     fJetCorrForID->setJetPhi(itJet->phi());
+  //     fJetCorrForID->setJetE(itJet->energy());
+  //     fJetCorrForID->setRho(*hRho);
+  //     fJetCorrForID->setJetA(itJet->jetArea());
+  //     fJetCorrForID->setJetEMF(-99.0);
+  //     double jetcorrForID = fJetCorrForID->getCorrection();
       
-      pJet->mva = fJetPUIDMVACalc.mvaValue((float)pvCol->size(), ptRaw*jetcorrForID, itJet->eta(), itJet->phi(),
-			                   pJet->d0, pJet->dz, pJet->beta, pJet->betaStar, itJet->chargedMultiplicity(), itJet->neutralMultiplicity(),
-			                   dRMean, pJet->dR2Mean, pJet->ptD, frac01, frac02, frac03, frac04, frac05);
-    }
+  //     pJet->mva = fJetPUIDMVACalc.mvaValue((float)pvCol->size(), ptRaw*jetcorrForID, itJet->eta(), itJet->phi(),
+		// 	                   pJet->d0, pJet->dz, pJet->beta, pJet->betaStar, itJet->chargedMultiplicity(), itJet->neutralMultiplicity(),
+		// 	                   dRMean, pJet->dR2Mean, pJet->ptD, frac01, frac02, frac03, frac04, frac05);
+  //   }
     
-    // Basic Noise Variables
-    pJet->chEmFrac   = itJet->chargedEmEnergy() / itJet->energy();
-    pJet->neuEmFrac  = itJet->neutralEmEnergy() / itJet->energy();
-    pJet->chHadFrac  = itJet->chargedHadronEnergy() / itJet->energy();
-    pJet->neuHadFrac = itJet->neutralHadronEnergy() / itJet->energy();
-    //
-    // Generator matching
-    //==============================
-    const reco::GenJet * matchGenJet   = 0; 
-    if(fUseGen) matchGenJet = match(&(*itJet),genJetCol);
-    if(matchGenJet != 0) { 
-      pJet->mcFlavor               = (*jetFlavourMatch)[edm::RefToBase<reco::Jet>(jetRef)].getFlavour();
-      pJet->mcFlavorPhys           = (*jetFlavourMatchPhys)[edm::RefToBase<reco::Jet>(jetRef)].getFlavour();
-      pJet->genpt                  = matchGenJet->pt();
-      pJet->geneta                 = matchGenJet->eta();
-      pJet->genphi                 = matchGenJet->phi();
-      pJet->genm                   = matchGenJet->mass();
-    }
-    pJet->hltMatchBits = TriggerTools::matchHLT(pJet->eta, pJet->phi, triggerRecords, triggerEvent);
-    //Add Extras
-    if(fComputeFullJetInfo)                        addJet(pAddJet,*itJet,*(hRho.product()));
-    if(fComputeFullJetInfo && itJet->pt() >  150.) topJet(pTopJet,*itJet,*(hRho.product()));
-  } 
+  //   // Basic Noise Variables
+  //   pJet->chEmFrac   = itJet->chargedEmEnergy() / itJet->energy();
+  //   pJet->neuEmFrac  = itJet->neutralEmEnergy() / itJet->energy();
+  //   pJet->chHadFrac  = itJet->chargedHadronEnergy() / itJet->energy();
+  //   pJet->neuHadFrac = itJet->neutralHadronEnergy() / itJet->energy();
+  //   //
+  //   // Generator matching
+  //   //==============================
+  //   const reco::GenJet * matchGenJet   = 0; 
+  //   if(fUseGen) matchGenJet = match(&(*itJet),genJetCol);
+  //   if(matchGenJet != 0) { 
+  //     pJet->mcFlavor               = (*jetFlavourMatch)[edm::RefToBase<reco::Jet>(jetRef)].getFlavour();
+  //     pJet->mcFlavorPhys           = (*jetFlavourMatchPhys)[edm::RefToBase<reco::Jet>(jetRef)].getFlavour();
+  //     pJet->genpt                  = matchGenJet->pt();
+  //     pJet->geneta                 = matchGenJet->eta();
+  //     pJet->genphi                 = matchGenJet->phi();
+  //     pJet->genm                   = matchGenJet->mass();
+  //   }
+  //   ////////pJet->hltMatchBits = TriggerTools::matchHLT(pJet->eta, pJet->phi, triggerRecords, triggerEvent);
+  //   //Add Extras
+  //   if(fComputeFullJetInfo)                        addJet(pAddJet,*itJet,*(hRho.product()));
+  //   if(fComputeFullJetInfo && itJet->pt() >  150.) topJet(pTopJet,*itJet,*(hRho.product()));
+  // } 
 }
 
 //--------------------------------------------------------------------------------------------------

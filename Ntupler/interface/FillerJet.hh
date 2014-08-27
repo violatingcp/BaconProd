@@ -47,9 +47,9 @@ namespace baconhep
 		TClonesArray                     *iTopArray,       // Top Jet Array to be filled
                 const edm::Event                 &iEvent,          // event info
 		const edm::EventSetup            &iSetup,          // event setup info
-	        const reco::Vertex		 &pv,	           // event primary vertex
-		const std::vector<TriggerRecord> &triggerRecords,  // list of trigger names and objects
-		const trigger::TriggerEvent      &triggerEvent);   // event trigger objects
+	        const reco::Vertex		 &pv);	           // event primary vertex
+		// const std::vector<TriggerRecord> &triggerRecords,  // list of trigger names and objects
+		// const trigger::TriggerEvent      &triggerEvent);   // event trigger objects
             
     protected:
       void initJetCorr(const std::vector<std::string> &jecFiles, 

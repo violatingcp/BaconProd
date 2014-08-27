@@ -89,7 +89,7 @@ QGTagger.srcJets                               = cms.InputTag('ak5PFJets')
 QGTaggerSubJets                                = QGTagger.clone()
 QGTaggerSubJets.srcJets                        = cms.InputTag('ca5PFJetsPruned','SubJets')
 
-from JetTools.AnalyzerToolbox.njettinessadder_cfi import *
+from JetTools.AnalyzerToolbox.AnalyzerJetToolbox_cff import *
 Njettiness.src                                 =  cms.InputTag('ak5PFJets')
 
 

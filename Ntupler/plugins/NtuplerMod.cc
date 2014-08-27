@@ -348,27 +348,27 @@ void NtuplerMod::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 {
   fTotalEvents->Fill(1);
   
-  edm::Handle<edm::TriggerResults> hTrgRes;
-  iEvent.getByLabel(fHLTTag,hTrgRes);
-  assert(hTrgRes.isValid());  
-  const edm::TriggerNames &triggerNames = iEvent.triggerNames(*hTrgRes);
-  Bool_t config_changed = false;
-  if(fTriggerNamesID != triggerNames.parameterSetID()) {
-    fTriggerNamesID = triggerNames.parameterSetID();
-    config_changed  = true;
-  }
-  if(config_changed) {
-    initHLT(*hTrgRes, triggerNames);
-  }
+  // edm::Handle<edm::TriggerResults> hTrgRes;
+  // iEvent.getByLabel(fHLTTag,hTrgRes);
+  // assert(hTrgRes.isValid());  
+  // const edm::TriggerNames &triggerNames = iEvent.triggerNames(*hTrgRes);
+  // Bool_t config_changed = false;
+  // if(fTriggerNamesID != triggerNames.parameterSetID()) {
+  //   fTriggerNamesID = triggerNames.parameterSetID();
+  //   config_changed  = true;
+  // }
+  // if(config_changed) {
+  //   initHLT(*hTrgRes, triggerNames);
+  // }
   
-  TriggerBits triggerBits;
-  for(unsigned int irec=0; irec<fTrigger->fRecords.size(); irec++) {
-    if(fTrigger->fRecords[irec].hltPathIndex == (unsigned int)-1) continue;
-    if(hTrgRes->accept(fTrigger->fRecords[irec].hltPathIndex)) {
-      triggerBits [fTrigger->fRecords[irec].baconTrigBit] = 1;
-    }
-  }
-  if(fSkipOnHLTFail && triggerBits == 0) return;  
+  // TriggerBits triggerBits;
+  // for(unsigned int irec=0; irec<fTrigger->fRecords.size(); irec++) {
+  //   if(fTrigger->fRecords[irec].hltPathIndex == (unsigned int)-1) continue;
+  //   if(hTrgRes->accept(fTrigger->fRecords[irec].hltPathIndex)) {
+  //     triggerBits [fTrigger->fRecords[irec].baconTrigBit] = 1;
+  //   }
+  // }
+  // if(fSkipOnHLTFail && triggerBits == 0) return;  
 
 
   if(fIsActiveGenInfo) {
@@ -381,25 +381,25 @@ void NtuplerMod::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   const reco::Vertex *pv = fFillerPV->fill(fPVArr, nvertices, iEvent);
   assert(pv);
   
-  separatePileUp(iEvent, *pv);
+  //separatePileUp(iEvent, *pv);
   
-  if(fIsActiveEvtInfo) {
-    fFillerEvtInfo->fill(fEvtInfo, iEvent, *pv, (nvertices>0), triggerBits);
-  }
+  // if(fIsActiveEvtInfo) {
+  //   fFillerEvtInfo->fill(fEvtInfo, iEvent, *pv, (nvertices>0), triggerBits);
+  // }
   
   edm::Handle<trigger::TriggerEvent> hTrgEvt;
   iEvent.getByLabel(fHLTObjTag,hTrgEvt);
   
-  if(fIsActiveEle) {
-    fEleArr->Clear();
-    //fFillerEle->fill(fEleArr, iEvent, iSetup, *pv, nvertices, fPFNoPU, fTrigger->fRecords, *hTrgEvt);
-    fFillerEle->fill(fEleArr, iEvent, iSetup, *pv, nvertices, fPFNoPU, fTrigger->fRecords, &(*hTrgEvt));
-  }
+  // if(fIsActiveEle) {
+  //   fEleArr->Clear();
+  //   //fFillerEle->fill(fEleArr, iEvent, iSetup, *pv, nvertices, fPFNoPU, fTrigger->fRecords, *hTrgEvt);
+  //   fFillerEle->fill(fEleArr, iEvent, iSetup, *pv, nvertices, fPFNoPU, fTrigger->fRecords, &(*hTrgEvt));
+  // }
 
-  if(fIsActiveMuon) {
-    fMuonArr->Clear();  
-    fFillerMuon->fill(fMuonArr, iEvent, iSetup, *pv, fPFNoPU, fPFPU, fTrigger->fRecords, *hTrgEvt);
-  }
+  // if(fIsActiveMuon) {
+  //   fMuonArr->Clear();  
+  //   fFillerMuon->fill(fMuonArr, iEvent, iSetup, *pv, fPFNoPU, fPFPU, fTrigger->fRecords, *hTrgEvt);
+  // }
 
   if(fIsActivePhoton) {
     fPhotonArr->Clear();  
@@ -412,19 +412,24 @@ void NtuplerMod::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     fFillerTau->fill(fTauArr, iEvent, iSetup, *pv, fTrigger->fRecords, *hTrgEvt);
   }
   
+  std::cout << "filling jet information..." << std::endl;
+
   if(fIsActiveJet) {
     for(unsigned int i0=0; i0<fConeSizes.size()*(fJetPostFix.size()); i0++) { 
       fJetArr[i0]->Clear();
       if(fComputeFullJetInfo) {
         fAddJetArr[i0]->Clear();      
         fTopJetArr[i0]->Clear();      
-        fFillerJet[i0]->fill(fJetArr[i0], fAddJetArr[i0], fTopJetArr[i0], iEvent, iSetup, *pv, fTrigger->fRecords, *hTrgEvt);
+        fFillerJet[i0]->fill(fJetArr[i0], fAddJetArr[i0], fTopJetArr[i0], iEvent, iSetup, *pv);//, fTrigger->fRecords, *hTrgEvt);
       } else {
-        fFillerJet[i0]->fill(fJetArr[i0], 0, 0, iEvent, iSetup, *pv, fTrigger->fRecords, *hTrgEvt);
+        fFillerJet[i0]->fill(fJetArr[i0], 0, 0, iEvent, iSetup, *pv);//, fTrigger->fRecords, *hTrgEvt);
       }
     }
   }
   
+  std::cout << "done filling jet information..." << std::endl;
+
+
   if(fIsActivePF) { 
     fPFParArr->Clear();
     fFillerPF->fill(fPFParArr,fPVArr,iEvent);
@@ -472,13 +477,13 @@ void NtuplerMod::separatePileUp(const edm::Event &iEvent, const reco::Vertex &pv
   // Get PF-candidates collection
   edm::Handle<reco::PFCandidateCollection> hPFCandProduct;
   iEvent.getByLabel(fPFCandName,hPFCandProduct);
-  assert(hPFCandProduct.isValid());
+  //assert(hPFCandProduct.isValid());
   const reco::PFCandidateCollection *pfCandCol = hPFCandProduct.product();  
   
   // Get vertex collection
   edm::Handle<reco::VertexCollection> hVertexProduct;
   iEvent.getByLabel(fPVName,hVertexProduct);
-  assert(hVertexProduct.isValid());
+  //assert(hVertexProduct.isValid());
   const reco::VertexCollection *pvCol = hVertexProduct.product();
   
   fPFNoPU.clear();
