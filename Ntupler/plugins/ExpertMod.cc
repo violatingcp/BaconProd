@@ -207,7 +207,7 @@ void ExpertMod::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 //  separatePileUp(iEvent, *pv);
   
   if(fIsActiveEvtInfo) {
-    fFillerEvtInfo->fill(fEvtInfo, iEvent, *pv, (nvertices>0), triggerBits);
+    fFillerEvtInfo->fill(fEvtInfo, iEvent, *pv, (nvertices>0));//, triggerBits);
   }
   
   if(fIsActivePF) {

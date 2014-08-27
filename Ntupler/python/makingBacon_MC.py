@@ -48,6 +48,7 @@ process.load('BaconProd/Ntupler/myJetExtras04Puppi_cff')    # include gen jets a
 #process.pfJetMETcorr.jetCorrLabel = cms.string("ak5PFL1FastL2L3")
 
 process.load('JetTools/AnalyzerToolbox/AnalyzerJetToolbox_cff')
+from RecoMET.METProducers.PFMET_cfi import pfMet
 
 # trigger filter
 import os
@@ -64,7 +65,7 @@ for line in hlt_file.readlines():
     process.hltHighLevel.HLTPaths.extend(cms.untracked.vstring(hlt_path))
 
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 process.source = cms.Source("PoolSource",
   fileNames  = cms.untracked.vstring('/store/results/b_tagging/StoreResults/QCD_Pt-300to470_Tune4C_13TeV_pythia8/USER/Spring14dr_PU_S14_POSTLS170_V6AN1_miniAOD706p1_814812ec83fce2f620905d2bb30e9100-v1/00000/0044DCD0-BC1B-E411-9F97-003048FFCBFC.root')
 )
@@ -79,6 +80,10 @@ process.options = cms.untracked.PSet(
 
 is_data_flag = False
 do_hlt_filter = False
+
+process.pfMetPuppi = pfMet.clone();
+process.pfMetPuppi.src = cms.InputTag('puppi','Puppi')
+process.pfMetPuppi.calculateSignificance = False # this can't be easily implemented on packed PF candidates at the moment
 
 # change jet inputs
 # Select candidates that would pass CHS requirements
@@ -104,14 +109,16 @@ process.ntupler = cms.EDAnalyzer('NtuplerMod',
     edmPFCandName        = cms.untracked.string('packedPFCandidates'),
     edmPileupInfoName    = cms.untracked.string('addPileupInfo'),
     edmBeamspotName      = cms.untracked.string('offlineBeamSpot'),
-    edmPFMETName         = cms.untracked.string('pfMet'),
+    edmPFMETName         = cms.untracked.string('slimmedMETs'),
     edmPFMETCorrName     = cms.untracked.string('pfType0p1CorrectedMet'),
     edmMVAMETName        = cms.untracked.string('pfMEtMVA'),
     edmMVAMETUnityName   = cms.untracked.string('pfMEtMVAUnity'),
     edmMVAMETNoSmearName = cms.untracked.string('pfMEtMVANoSmear'),
+    edmPuppETName        = cms.untracked.string('pfMetPuppi'),
     edmRhoForIsoName     = cms.untracked.string('fixedGridRhoAll'),
     edmRhoForJetEnergy   = cms.untracked.string('fixedGridRhoAll'),
-    doFillMET            = cms.untracked.bool(False)
+    doFillMET            = cms.untracked.bool(True),
+    doFillMETFilters     = cms.untracked.bool(False)
   ),
   
   GenInfo = cms.untracked.PSet(
@@ -196,7 +203,7 @@ process.ntupler = cms.EDAnalyzer('NtuplerMod',
                                             'BaconProd/Utils/data/START53_V15_L2Relative_AK5PF.txt',
 				            'BaconProd/Utils/data/START53_V15_L3Absolute_AK5PF.txt')
 		    ),
-    edmRhoName = cms.untracked.string('kt6PFJets'),
+    edmRhoName = cms.untracked.string('fixedGridRhoAll'),
     
     # ORDERD list of pileup jet ID input files
     jetPUIDFiles = cms.untracked.vstring('',
@@ -238,6 +245,7 @@ process.baconSequence = cms.Sequence(#process.PFBRECO*
                                      process.AK4jetsequencePuppi*
                                      #process.recoTau*   ### must come after antiktGenJets otherwise conflict on RecoJets/JetProducers/plugins
 				     #process.MVAMetSeq*
+             process.pfMetPuppi*
 				     process.ntupler)
 				     
 if do_hlt_filter:

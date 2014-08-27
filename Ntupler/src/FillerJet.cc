@@ -242,11 +242,11 @@ void FillerJet::fill(TClonesArray *array, TClonesArray *iExtraArray,TClonesArray
   // assert(hVertexProduct.isValid());
   // const reco::VertexCollection *pvCol = hVertexProduct.product();
 
-  // // Get event energy density for jet correction
-  // edm::Handle<double> hRho;
-  // edm::InputTag rhoTag(fRhoName,"rho","RECO");
-  // iEvent.getByLabel(rhoTag,hRho);
-  // assert(hRho.isValid()); 
+  // Get event energy density for jet correction
+  edm::Handle<double> hRho;
+  edm::InputTag rhoTag(fRhoName);
+  iEvent.getByLabel(rhoTag,hRho);
+  //assert(hRho.isValid()); 
  
   // // Get b-jet tagger
   // edm::Handle<reco::JetTagCollection> hCSVbtags;
@@ -283,28 +283,28 @@ void FillerJet::fill(TClonesArray *array, TClonesArray *iExtraArray,TClonesArray
   // iEvent.getByLabel(fQGLikelihoodSubJets,"qgLikelihood",hQGLikelihoodSubJets);
   // assert(hQGLikelihoodSubJets.isValid());
   
-  // int pId = 0; 
-  // TClonesArray &rArray      = *array;
+  int pId = 0; 
+  TClonesArray &rArray      = *array;
   // TClonesArray &rExtraArray = *iExtraArray;
   // TClonesArray &rTopArray   = *iTopArray;
-  // for(reco::PFJetCollection::const_iterator itJet = jetCol->begin(); itJet!=jetCol->end(); ++itJet) {
-  //   const double ptRaw = itJet->pt();
-  //   pId++;
-  //   // input to jet corrections
-  //   fJetCorr->setJetPt(ptRaw);
-  //   fJetCorr->setJetEta(itJet->eta());
-  //   fJetCorr->setJetPhi(itJet->phi());
-  //   fJetCorr->setJetE(itJet->energy());
-  //   fJetCorr->setRho(*hRho);
-  //   fJetCorr->setJetA(itJet->jetArea());
-  //   fJetCorr->setJetEMF(-99.0);
-  //   double jetcorr = fJetCorr->getCorrection();
+  for(reco::PFJetCollection::const_iterator itJet = jetCol->begin(); itJet!=jetCol->end(); ++itJet) {
+    const double ptRaw = itJet->pt();
+    pId++;
+    // input to jet corrections
+    fJetCorr->setJetPt(ptRaw);
+    fJetCorr->setJetEta(itJet->eta());
+    fJetCorr->setJetPhi(itJet->phi());
+    fJetCorr->setJetE(itJet->energy());
+    fJetCorr->setRho(*hRho);
+    fJetCorr->setJetA(itJet->jetArea());
+    fJetCorr->setJetEMF(-99.0);
+    double jetcorr = fJetCorr->getCorrection();
 
-  //   // jet pT cut (both raw and corrected pT must exceed threshold)
-  //   if(ptRaw*jetcorr < fMinPt || ptRaw < fMinPt) continue;
+    // jet pT cut (both raw and corrected pT must exceed threshold)
+    if(ptRaw*jetcorr < fMinPt || ptRaw < fMinPt) continue;
     
-  //   // jet eta cut to prevent exception in computing JEC uncertainty
-  //   if(fabs(itJet->eta()) >= 5.4) continue;
+    // jet eta cut to prevent exception in computing JEC uncertainty
+    if(fabs(itJet->eta()) >= 5.4) continue;
 
   //   fJetUnc->setJetPt ( ptRaw  );
   //   fJetUnc->setJetEta( itJet->eta() );
@@ -312,12 +312,12 @@ void FillerJet::fill(TClonesArray *array, TClonesArray *iExtraArray,TClonesArray
 
   //   bool passLoose = JetTools::passPFLooseID(*itJet);
     
-  //   // construct object and place in array
-  //   assert(rArray.GetEntries() < rArray.GetSize());
-  //   const int index = rArray.GetEntries();
-  //   new(rArray[index]) baconhep::TJet();
-  //   baconhep::TJet    *pJet = (baconhep::TJet*)rArray[index];
-  //   baconhep::TAddJet *pAddJet = 0; 
+    // construct object and place in array
+    assert(rArray.GetEntries() < rArray.GetSize());
+    const int index = rArray.GetEntries();
+    new(rArray[index]) baconhep::TJet();
+    baconhep::TJet    *pJet = (baconhep::TJet*)rArray[index];
+    // baconhep::TAddJet *pAddJet = 0; 
   //   if(fComputeFullJetInfo) {
   //     assert(rExtraArray.GetEntries() < rExtraArray.GetSize());
   //     const int extraIndex = rExtraArray.GetEntries();
@@ -338,13 +338,13 @@ void FillerJet::fill(TClonesArray *array, TClonesArray *iExtraArray,TClonesArray
   //   //
   //   // Kinematics
   //   //==============================    
-  //   pJet->pt    = ptRaw * jetcorr;
-  //   pJet->eta   = itJet->eta();
-  //   pJet->phi   = itJet->phi();
-  //   pJet->mass  = itJet->mass() * jetcorr;
-  //   pJet->ptRaw = ptRaw;
-  //   pJet->area  = itJet->jetArea();
-  //   pJet->unc   = jetunc;
+    pJet->pt    = ptRaw * jetcorr;
+    pJet->eta   = itJet->eta();
+    pJet->phi   = itJet->phi();
+    pJet->mass  = itJet->mass() * jetcorr;
+    pJet->ptRaw = ptRaw;
+    pJet->area  = itJet->jetArea();
+    // pJet->unc   = jetunc;
     
   //   //
   //   // Impact Parameter
@@ -424,9 +424,9 @@ void FillerJet::fill(TClonesArray *array, TClonesArray *iExtraArray,TClonesArray
   //   }
   //   ////////pJet->hltMatchBits = TriggerTools::matchHLT(pJet->eta, pJet->phi, triggerRecords, triggerEvent);
   //   //Add Extras
-  //   if(fComputeFullJetInfo)                        addJet(pAddJet,*itJet,*(hRho.product()));
+  //if(fComputeFullJetInfo)                        addJet(pAddJet,*itJet,*(hRho.product()));
   //   if(fComputeFullJetInfo && itJet->pt() >  150.) topJet(pTopJet,*itJet,*(hRho.product()));
-  // } 
+  } 
 }
 
 //--------------------------------------------------------------------------------------------------

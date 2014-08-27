@@ -37,9 +37,8 @@ FillerEventInfo::~FillerEventInfo(){}
 
 //--------------------------------------------------------------------------------------------------
 void FillerEventInfo::fill(TEventInfo *evtInfo,
-                           const edm::Event &iEvent, const reco::Vertex &pv, const bool hasGoodPV,
-			   const TriggerBits triggerBits)
-{
+                           const edm::Event &iEvent, const reco::Vertex &pv, const bool hasGoodPV0)
+   {
   assert(evtInfo);
   
   evtInfo->runNum  = iEvent.id().run();
@@ -76,7 +75,7 @@ void FillerEventInfo::fill(TEventInfo *evtInfo,
   evtInfo->pvx = pv.x();
   evtInfo->pvy = pv.y();
   evtInfo->pvz = pv.z();
-  evtInfo->hasGoodPV = hasGoodPV;
+  // evtInfo->hasGoodPV = hasGoodPV;
   
   
   //
@@ -185,6 +184,8 @@ void FillerEventInfo::fill(TEventInfo *evtInfo,
     // PF MET
     //edm::Handle<reco::PFMETCollection> hPFMETProduct;
     //const reco::PFMET &inPFMET = hPFMETProduct.product()->front();
+    std::cout << "filling MET ..." << std::endl;
+
     edm::Handle<std::vector<pat::MET> > hPFMETProduct;
     iEvent.getByLabel(fPFMETName,hPFMETProduct);
     assert(hPFMETProduct.isValid());
@@ -264,25 +265,25 @@ void FillerEventInfo::fill(TEventInfo *evtInfo,
   // event energy density
   //==============================
   
-  // Rho for isolation correction
-  edm::Handle<double> hRhoIso;
-  edm::InputTag rhoIsoTag(fRhoIsoName,"rho","RECO");
-  iEvent.getByLabel(rhoIsoTag,hRhoIso);
-  assert(hRhoIso.isValid());
-  evtInfo->rhoIso = *hRhoIso;
+  // // Rho for isolation correction
+  // edm::Handle<double> hRhoIso;
+  // edm::InputTag rhoIsoTag(fRhoIsoName,"rho","RECO");
+  // iEvent.getByLabel(rhoIsoTag,hRhoIso);
+  // assert(hRhoIso.isValid());
+  // evtInfo->rhoIso = *hRhoIso;
   
-  // Rho for jet energy correction
-  edm::Handle<double> hRhoJet;
-  edm::InputTag rhoJetTag(fRhoJetName,"rho","RECO");
-  iEvent.getByLabel(rhoJetTag,hRhoJet);
-  assert(hRhoJet.isValid());
-  evtInfo->rhoJet = *hRhoJet;
+  // // Rho for jet energy correction
+  // edm::Handle<double> hRhoJet;
+  // edm::InputTag rhoJetTag(fRhoJetName,"rho","RECO");
+  // iEvent.getByLabel(rhoJetTag,hRhoJet);
+  // assert(hRhoJet.isValid());
+  // evtInfo->rhoJet = *hRhoJet;
 
 
   //
   // fired triggers
   //==============================
-  evtInfo->triggerBits = triggerBits;
+  //evtInfo->triggerBits = triggerBits;
 }
 
 

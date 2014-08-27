@@ -26,8 +26,9 @@ namespace baconhep
       void fill(TEventInfo         *evtInfo,       // output object to be filled
                 const edm::Event   &iEvent,        // EDM event info
 		const reco::Vertex &pv,            // event primary vertex
-		const bool          hasGoodPV,     // flag for if PV passing cuts is found
-		const TriggerBits   triggerBits);  // bits for corresponding fired triggers
+		const bool          hasGoodPV);
+    //,     // flag for if PV passing cuts is found
+		//const TriggerBits   triggerBits);  // bits for corresponding fired triggers
 	       
     protected:
       void computeTrackMET(const reco::Vertex &pv, 
