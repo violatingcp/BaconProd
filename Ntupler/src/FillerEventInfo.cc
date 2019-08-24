@@ -147,7 +147,6 @@ void FillerEventInfo::fill(TEventInfo *evtInfo,
   edm::Handle<double> prefweightDown;
   iEvent.getByToken(fTokPrefWeightDown, prefweightDown);
   evtInfo->prefweightDown = (*prefweightDown);
-  	
 
   //
   // MET filter

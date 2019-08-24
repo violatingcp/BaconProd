@@ -93,6 +93,7 @@ class NtuplerMod : public edm::EDAnalyzer {
 
     bool fComputeFullJetInfo,      fComputeFullFatJetInfo,      fComputeFullFatterJetInfo;
     bool fComputeFullPuppiJetInfo, fComputeFullFatPuppiJetInfo, fComputeFullFatterPuppiJetInfo;
+    bool fAddPFCandFatPuppiJet;
 
     bool fComputeFullSVInfo,      fComputeFullFatSVInfo,      fComputeFullFatterSVInfo;
     bool fComputeFullPuppiSVInfo, fComputeFullFatPuppiSVInfo, fComputeFullFatterPuppiSVInfo;

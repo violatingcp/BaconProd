@@ -76,6 +76,7 @@ NtuplerMod::NtuplerMod(const edm::ParameterSet &iConfig):
   fComputeFullPuppiJetInfo(false),
   fComputeFullFatPuppiJetInfo(false),
   fComputeFullFatterPuppiJetInfo(false),
+  fAddPFCandFatPuppiJet(false),
   fFillerEvtInfo     (0),
   fFillerGenInfo     (0),
   fFillerGenJet      (0),
@@ -349,10 +350,12 @@ NtuplerMod::NtuplerMod(const edm::ParameterSet &iConfig):
     fIsActiveFatPuppiJet = cfg.getUntrackedParameter<bool>("isActive");
     fUseAODFatPuppiJet   = cfg.getUntrackedParameter<bool>("useAOD");
     fComputeFullFatPuppiJetInfo = cfg.getUntrackedParameter<bool>("doComputeFullJetInfo");
+    fAddPFCandFatPuppiJet       = cfg.getUntrackedParameter<bool>("addPFCand");
     if(fIsActiveFatPuppiJet) {
       fFillerFatPuppiJet = new baconhep::FillerJet(cfg, fUseAODFatPuppiJet,consumesCollector()); assert(fFillerFatPuppiJet);
       fFatPuppiJetArr = new TClonesArray("baconhep::TJet");                 assert(fFatPuppiJetArr);
       if(fComputeFullFatPuppiJetInfo) {
+	if(fAddPFCandFatPuppiJet && !fIsActivePF) fPFParArr = new TClonesArray("baconhep::TPFPart",20000); assert(fPFParArr);
         fAddFatPuppiJetArr = new TClonesArray("baconhep::TAddJet"); assert(fAddFatPuppiJetArr);
 	fComputeFullFatPuppiSVInfo  = cfg.getUntrackedParameter<bool>("doComputeSVInfo");
 	if(!fSVArr && fComputeFullFatPuppiSVInfo) { fSVArr = new TClonesArray("baconhep::TSVtx");       assert(fSVArr); }
@@ -494,7 +497,9 @@ void NtuplerMod::beginJob()
   }
   if(fIsActiveFatPuppiJet) {
     fEventTree->Branch("AK8Puppi", &fFatPuppiJetArr);
-    if(fComputeFullFatPuppiJetInfo) { fEventTree->Branch("AddAK8Puppi", &fAddFatPuppiJetArr); }
+    if(fComputeFullFatPuppiJetInfo) { 
+      if(fAddPFCandFatPuppiJet && !fIsActivePF) fEventTree->Branch("PFPart", &fPFParArr); 
+      fEventTree->Branch("AddAK8Puppi", &fAddFatPuppiJetArr); }
   }
   if(fIsActiveFatterPuppiJet) {
     fEventTree->Branch("CA15Puppi", &fFatterPuppiJetArr);
@@ -650,7 +655,7 @@ void NtuplerMod::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   if(fIsActiveFatJet) {
     fFatJetArr->Clear();
     if(fComputeFullFatJetInfo) {
-      fAddFatJetArr->Clear();      
+      fAddFatJetArr->Clear();
       if(fUseAODFatJet) { fFillerFatJet->fill(fFatJetArr, fAddFatJetArr, fSVArr, iEvent, iSetup, *pv, nvertices, fPFParArr,fTrigger->fRecords, hTrgEvtDummy ,hTrgObjsDummy);  }
       else              { fFillerFatJet->fill(fFatJetArr, fAddFatJetArr, fSVArr, iEvent, iSetup, *pv, nvertices, fPFParArr,fTrigger->fRecords, *uFTrgObjs); }  // (!) consolidate fillers for AOD and MINIAOD
     } else {
@@ -684,6 +689,7 @@ void NtuplerMod::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     fFatPuppiJetArr->Clear();
     if(fComputeFullFatPuppiJetInfo) {
       fAddFatPuppiJetArr->Clear();      
+      if(fAddPFCandFatPuppiJet && !fIsActivePF) fPFParArr->Clear();
       if(fUseAODFatPuppiJet) { fFillerFatPuppiJet->fill(fFatPuppiJetArr, fAddFatPuppiJetArr, fSVArr, iEvent, iSetup, *pv, nvertices, fPFParArr,fTrigger->fRecords,hTrgEvtDummy,hTrgObjsDummy);  }
       else                   { fFillerFatPuppiJet->fill(fFatPuppiJetArr, fAddFatPuppiJetArr, fSVArr, iEvent, iSetup, *pv, nvertices, fPFParArr,fTrigger->fRecords, *uFTrgObjs); } 
     } else {

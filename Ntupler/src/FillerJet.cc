@@ -19,6 +19,7 @@
 #include "DataFormats/BTauReco/interface/JetTag.h"
 #include "DataFormats/BTauReco/interface/CATopJetTagInfo.h"
 #include "DataFormats/BTauReco/interface/BoostedDoubleSVTagInfo.h"
+#include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 
 //#include "DataFormats/MuonReco/interface/Muon.h"
 //#include "DataFormats/PatCandidates/interface/Muon.h"
@@ -292,7 +293,7 @@ void FillerJet::fill(TClonesArray *array, TClonesArray *iExtraArray,TClonesArray
                      const edm::Event &iEvent, const edm::EventSetup &iSetup, 
 		     const reco::Vertex	&pv,
 		     int iNPV,
-		     const TClonesArray *iPFArr,
+		     TClonesArray *iPFArr,
 		     const std::vector<TriggerRecord> &triggerRecords,
 		     const trigger::TriggerEvent *triggerEvent,
                      const pat::TriggerObjectStandAloneCollection *patTriggerObjects)
@@ -666,17 +667,52 @@ void FillerJet::fill(TClonesArray *array, TClonesArray *iExtraArray,TClonesArray
     }
      if(fAddPFCand) { 
       pJet->pfCands.clear();
+      TClonesArray &rPFArray = *iPFArr;
       std::vector<reco::CandidatePtr> pfConstituents = itJet->getJetConstituents();                                                                                                   
       for(unsigned int i0 = 0; i0 < pfConstituents.size(); i0++) { 
-	reco::CandidatePtr pfcand = pfConstituents[i0]; 
-	for(       int i1 = 0; i1 < iPFArr->GetEntriesFast();  i1++) { 
-	  baconhep::TPFPart *pPF = (baconhep::TPFPart*)(*iPFArr)[i1];
-	  if(pfcand->pdgId() != pPF->pfType)  continue;
-	  if(fabs(pfcand->pt() - pPF->pt)  > 0.1)  continue;
-	  if(fabs(pfcand->eta()- pPF->eta) > 0.01) continue;
-	  if(fabs(reco::deltaPhi(pfcand->phi(),pPF->phi)) > 0.01) continue;
-	  pJet->pfCands.push_back(i1);
+	edm::Ptr<pat::PackedCandidate> pfcand = edm::Ptr<pat::PackedCandidate>(pfConstituents[i0]); 
+	const int index =  rPFArray.GetEntries();
+	new((rPFArray)[index]) baconhep::TPFPart();
+	baconhep::TPFPart *pPF = (baconhep::TPFPart*)(rPFArray)[index];
+	pPF->pt      = pfcand->pt();
+	pPF->eta     = pfcand->eta();
+	pPF->phi     = pfcand->phi();
+	pPF->m       = pfcand->mass();
+	pPF->e       = pfcand->energy();
+	pPF->q       = pfcand->charge();
+	pPF->pfType  = pfcand->pdgId();
+	pPF->pup     = pfcand->puppiWeight();
+	pJet->pfCands.push_back(index);
+	if (pfcand->hasTrackDetails()) {
+	  pPF->vtxChi2 = pfcand->vertexChi2();
+	  //pPF->pup     = pfcand->puppiWeight();                                                                                                                                                                                                                              
+	  if(pfcand->charge() == 0) continue;
+	  const reco::Track & pseudoTrack =  pfcand->pseudoTrack();
+	  pPF->trkChi2 = pseudoTrack.normalizedChi2();
+	  pPF->dz      = pfcand->dz();
+	  pPF->d0      = pfcand->dxy();
+	  pPF->d0Err   = pfcand->dxyError();
+	  /*
+	  reco::Track::CovarianceMatrix myCov = pseudoTrack.covariance ();
+	  pPF->dptdpt    = catchInfsAndBound(myCov[0][0],0,-1,1);
+	  pPF->detadeta  = catchInfsAndBound(myCov[1][1],0,-1,0.01);
+	  pPF->dphidphi  = catchInfsAndBound(myCov[2][2],0,-1,0.1);
+	  pPF->dxydxy    = catchInfsAndBound(myCov[3][3],7.,-1,7);
+	  pPF->dzdz      = catchInfsAndBound(myCov[4][4],6.5,-1,6.5);
+	  pPF->dxydz     = catchInfsAndBound(myCov[3][4],6.,-6,6);
+	  pPF->dphidxy   = catchInfs(myCov[2][3],-0.03);
+	  pPF->dlambdadz = catchInfs(myCov[1][4],-0.03);
+	  */
 	}
+	//pPF->deltaP = pfcand->deltaP();
+	//for(       int i1 = 0; i1 < iPFArr->GetEntriesFast();  i1++) { 
+	//  baconhep::TPFPart *pPF = (baconhep::TPFPart*)(*iPFArr)[i1];
+	//  if(pfcand->pdgId() != pPF->pfType)  continue;
+	//  if(fabs(pfcand->pt() - pPF->pt)  > 0.1)  continue;
+	//  if(fabs(pfcand->eta()- pPF->eta) > 0.01) continue;
+	//  if(fabs(reco::deltaPhi(pfcand->phi(),pPF->phi)) > 0.01) continue;
+	//pJet->pfCands.push_back(i1);
+	  //}
       }
     }
     ////Add Extras
